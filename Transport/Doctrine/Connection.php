@@ -155,7 +155,7 @@ class Connection
                 return null;
             }
 
-            $doctrineEnvelope['headers'] = \json_decode($doctrineEnvelope['headers'], true);
+            $this->decodeEnvelopeHeaders($doctrineEnvelope);
 
             $queryBuilder = $this->driverConnection->createQueryBuilder()
                 ->update($this->configuration['table_name'])
@@ -238,7 +238,13 @@ class Connection
             $queryBuilder->setMaxResults($limit);
         }
 
-        return $this->executeQuery($queryBuilder->getSQL(), $queryBuilder->getParameters())->fetchAll();
+        $data = $this->executeQuery($queryBuilder->getSQL(), $queryBuilder->getParameters())->fetchAll();
+
+        foreach ($data as &$row) {
+            $this->decodeEnvelopeHeaders($row);
+        }
+
+        return $data;
     }
 
     public function find($id): ?array
@@ -253,6 +259,8 @@ class Connection
         $data = $this->executeQuery($queryBuilder->getSQL(), [
             'id' => $id,
         ])->fetch();
+
+        $this->decodeEnvelopeHeaders($data);
 
         return false === $data ? null : $data;
     }
@@ -331,5 +339,10 @@ class Connection
     public static function formatDateTime(\DateTimeInterface $dateTime)
     {
         return $dateTime->format('Y-m-d\TH:i:s');
+    }
+
+    private function decodeEnvelopeHeaders(array &$doctrineEnvelope): void
+    {
+        $doctrineEnvelope['headers'] = \json_decode($doctrineEnvelope['headers'], true);
     }
 }
