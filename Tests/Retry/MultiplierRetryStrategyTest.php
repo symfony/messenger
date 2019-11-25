@@ -18,7 +18,7 @@ use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 
 class MultiplierRetryStrategyTest extends TestCase
 {
-    public function testIsRetryable()
+    public function testIsRetryable(): void
     {
         $strategy = new MultiplierRetryStrategy(3);
         $envelope = new Envelope(new \stdClass(), [new RedeliveryStamp(0)]);
@@ -26,7 +26,7 @@ class MultiplierRetryStrategyTest extends TestCase
         $this->assertTrue($strategy->isRetryable($envelope));
     }
 
-    public function testIsNotRetryable()
+    public function testIsNotRetryable(): void
     {
         $strategy = new MultiplierRetryStrategy(3);
         $envelope = new Envelope(new \stdClass(), [new RedeliveryStamp(3)]);
@@ -34,14 +34,14 @@ class MultiplierRetryStrategyTest extends TestCase
         $this->assertFalse($strategy->isRetryable($envelope));
     }
 
-    public function testIsNotRetryableWithZeroMax()
+    public function testIsNotRetryableWithZeroMax(): void
     {
         $strategy = new MultiplierRetryStrategy(0);
         $envelope = new Envelope(new \stdClass(), [new RedeliveryStamp(0)]);
         $this->assertFalse($strategy->isRetryable($envelope));
     }
 
-    public function testIsRetryableWithNoStamp()
+    public function testIsRetryableWithNoStamp(): void
     {
         $strategy = new MultiplierRetryStrategy(3);
         $envelope = new Envelope(new \stdClass());
@@ -52,7 +52,7 @@ class MultiplierRetryStrategyTest extends TestCase
     /**
      * @dataProvider getWaitTimeTests
      */
-    public function testGetWaitTime(int $delay, int $multiplier, int $maxDelay, int $previousRetries, int $expectedDelay)
+    public function testGetWaitTime(int $delay, int $multiplier, int $maxDelay, int $previousRetries, int $expectedDelay): void
     {
         $strategy = new MultiplierRetryStrategy(10, $delay, $multiplier, $maxDelay);
         $envelope = new Envelope(new \stdClass(), [new RedeliveryStamp($previousRetries)]);

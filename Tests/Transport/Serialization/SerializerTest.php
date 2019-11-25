@@ -18,6 +18,7 @@ use Symfony\Component\Messenger\Stamp\NonSendableStampInterface;
 use Symfony\Component\Messenger\Stamp\SerializerStamp;
 use Symfony\Component\Messenger\Stamp\ValidationStamp;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyMessage;
+use Symfony\Component\Messenger\Tests\Fixtures\DummyMessageInterface;
 use Symfony\Component\Messenger\Transport\Serialization\Serializer;
 use Symfony\Component\Serializer as SerializerComponent;
 use Symfony\Component\Serializer\Normalizer\ObjectNormalizer;
@@ -25,7 +26,7 @@ use Symfony\Component\Serializer\SerializerInterface as SerializerComponentInter
 
 class SerializerTest extends TestCase
 {
-    public function testEncodedIsDecodable()
+    public function testEncodedIsDecodable(): void
     {
         $serializer = new Serializer();
 
@@ -34,7 +35,7 @@ class SerializerTest extends TestCase
         $this->assertEquals($envelope, $serializer->decode($serializer->encode($envelope)));
     }
 
-    public function testEncodedWithStampsIsDecodable()
+    public function testEncodedWithStampsIsDecodable(): void
     {
         $serializer = new Serializer();
 
@@ -46,11 +47,9 @@ class SerializerTest extends TestCase
         $this->assertEquals($envelope, $serializer->decode($serializer->encode($envelope)));
     }
 
-    public function testEncodedIsHavingTheBodyAndTypeHeader()
+    public function testEncodedIsHavingTheBodyAndTypeHeader(): void
     {
-        $serializer = new Serializer();
-
-        $encoded = $serializer->encode(new Envelope(new DummyMessage('Hello')));
+        $encoded = (new Serializer)->encode(new Envelope(new DummyMessage('Hello')));
 
         $this->assertArrayHasKey('body', $encoded);
         $this->assertArrayHasKey('headers', $encoded);
@@ -59,13 +58,34 @@ class SerializerTest extends TestCase
         $this->assertSame('application/json', $encoded['headers']['Content-Type']);
     }
 
-    public function testUsesTheCustomFormatAndContext()
+    public function testUsesTheCustomFormatAndContext(): void
     {
-        $message = new DummyMessage('Foo');
+        $message    = new DummyMessage('Foo');
+        $serializer = new class($message) implements SerializerComponent\SerializerInterface
+        {
+            private $message;
 
-        $serializer = $this->getMockBuilder(SerializerComponent\SerializerInterface::class)->getMock();
-        $serializer->expects($this->once())->method('serialize')->with($message, 'csv', ['foo' => 'bar'])->willReturn('Yay');
-        $serializer->expects($this->once())->method('deserialize')->with('Yay', DummyMessage::class, 'csv', ['foo' => 'bar'])->willReturn($message);
+            public function __construct(DummyMessageInterface $message)
+            {
+                $this->message = $message;
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            public function serialize($data, string $format, array $context = []) : string
+            {
+                return 'Yay';
+            }
+
+            /**
+             * {@inheritDoc}
+             */
+            public function deserialize($data, string $type, string $format, array $context = [])
+            {
+                return $this->message;
+            }
+        };
 
         $encoder = new Serializer($serializer, 'csv', ['foo' => 'bar']);
 
@@ -76,15 +96,15 @@ class SerializerTest extends TestCase
         $this->assertSame($message, $decoded->getMessage());
     }
 
-    public function testEncodedWithSymfonySerializerForStamps()
+    public function testEncodedWithSymfonySerializerForStamps(): void
     {
         $serializer = new Serializer(
             $symfonySerializer = $this->createMock(SerializerComponentInterface::class)
         );
 
         $envelope = (new Envelope($message = new DummyMessage('test')))
-            ->with($serializerStamp = new SerializerStamp([ObjectNormalizer::GROUPS => ['foo']]))
-            ->with($validationStamp = new ValidationStamp(['foo', 'bar']));
+            ->with(new SerializerStamp([ObjectNormalizer::GROUPS => ['foo']]))
+            ->with(new ValidationStamp(['foo', 'bar']));
 
         $symfonySerializer
             ->expects($this->at(2))
@@ -106,7 +126,7 @@ class SerializerTest extends TestCase
         $this->assertArrayHasKey('X-Message-Stamp-'.ValidationStamp::class, $encoded['headers']);
     }
 
-    public function testDecodeWithSymfonySerializerStamp()
+    public function testDecodeWithSymfonySerializerStamp(): void
     {
         $serializer = new Serializer(
             $symfonySerializer = $this->createMock(SerializerComponentInterface::class)
@@ -141,7 +161,7 @@ class SerializerTest extends TestCase
         ]);
     }
 
-    public function testDecodingFailsWithBadFormat()
+    public function testDecodingFailsWithBadFormat(): void
     {
         $this->expectException(MessageDecodingFailedException::class);
 
@@ -156,7 +176,7 @@ class SerializerTest extends TestCase
     /**
      * @dataProvider getMissingKeyTests
      */
-    public function testDecodingFailsWithMissingKeys(array $data, string $expectedMessage)
+    public function testDecodingFailsWithMissingKeys(array $data, string $expectedMessage): void
     {
         $this->expectException(MessageDecodingFailedException::class);
         $this->expectExceptionMessage($expectedMessage);
@@ -184,7 +204,7 @@ class SerializerTest extends TestCase
         ];
     }
 
-    public function testDecodingFailsWithBadClass()
+    public function testDecodingFailsWithBadClass(): void
     {
         $this->expectException(MessageDecodingFailedException::class);
 
@@ -196,7 +216,7 @@ class SerializerTest extends TestCase
         ]);
     }
 
-    public function testEncodedSkipsNonEncodeableStamps()
+    public function testEncodedSkipsNonEncodeableStamps(): void
     {
         $serializer = new Serializer();
 

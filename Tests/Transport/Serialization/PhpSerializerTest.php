@@ -20,7 +20,7 @@ use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
 
 class PhpSerializerTest extends TestCase
 {
-    public function testEncodedIsDecodable()
+    public function testEncodedIsDecodable(): void
     {
         $serializer = new PhpSerializer();
 
@@ -31,7 +31,7 @@ class PhpSerializerTest extends TestCase
         $this->assertEquals($envelope, $serializer->decode($encoded));
     }
 
-    public function testDecodingFailsWithMissingBodyKey()
+    public function testDecodingFailsWithMissingBodyKey(): void
     {
         $this->expectException(MessageDecodingFailedException::class);
         $this->expectExceptionMessage('Encoded envelope should have at least a "body".');
@@ -41,10 +41,10 @@ class PhpSerializerTest extends TestCase
         $serializer->decode([]);
     }
 
-    public function testDecodingFailsWithBadFormat()
+    public function testDecodingFailsWithBadFormat(): void
     {
         $this->expectException(MessageDecodingFailedException::class);
-        $this->expectExceptionMessageRegExp('/Could not decode/');
+        $this->expectExceptionMessageMatches('/Could not decode/');
 
         $serializer = new PhpSerializer();
 
@@ -53,10 +53,10 @@ class PhpSerializerTest extends TestCase
         ]);
     }
 
-    public function testDecodingFailsWithBadClass()
+    public function testDecodingFailsWithBadClass(): void
     {
         $this->expectException(MessageDecodingFailedException::class);
-        $this->expectExceptionMessageRegExp('/class "ReceivedSt0mp" not found/');
+        $this->expectExceptionMessageMatches('/class "ReceivedSt0mp" not found/');
 
         $serializer = new PhpSerializer();
 
@@ -65,7 +65,7 @@ class PhpSerializerTest extends TestCase
         ]);
     }
 
-    public function testEncodedSkipsNonEncodeableStamps()
+    public function testEncodedSkipsNonEncodeableStamps(): void
     {
         $serializer = new PhpSerializer();
 

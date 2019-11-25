@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Messenger\Tests;
 
+use PHPUnit\Framework\MockObject\MockObject;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Messenger\Envelope;
@@ -35,7 +36,7 @@ use Symfony\Contracts\EventDispatcher\EventDispatcherInterface;
  */
 class WorkerTest extends TestCase
 {
-    public function testWorkerDispatchTheReceivedMessage()
+    public function testWorkerDispatchTheReceivedMessage(): void
     {
         $apiMessage = new DummyMessage('API');
         $ipaMessage = new DummyMessage('IPA');
@@ -44,6 +45,7 @@ class WorkerTest extends TestCase
             [new Envelope($apiMessage), new Envelope($ipaMessage)],
         ]);
 
+        /** @var MessageBusInterface|MockObject $bus */
         $bus = $this->getMockBuilder(MessageBusInterface::class)->getMock();
 
         $bus->expects($this->at(0))->method('dispatch')->with(
@@ -63,12 +65,13 @@ class WorkerTest extends TestCase
         $this->assertSame(2, $receiver->getAcknowledgeCount());
     }
 
-    public function testHandlingErrorCausesReject()
+    public function testHandlingErrorCausesReject(): void
     {
         $receiver = new DummyReceiver([
             [new Envelope(new DummyMessage('Hello'), [new SentStamp('Some\Sender', 'transport1')])],
         ]);
 
+        /** @var MessageBusInterface|MockObject $bus */
         $bus = $this->getMockBuilder(MessageBusInterface::class)->getMock();
         $bus->method('dispatch')->willThrowException(new \InvalidArgumentException('Why not'));
 
@@ -82,12 +85,13 @@ class WorkerTest extends TestCase
         $this->assertSame(0, $receiver->getAcknowledgeCount());
     }
 
-    public function testWorkerDoesNotSendNullMessagesToTheBus()
+    public function testWorkerDoesNotSendNullMessagesToTheBus(): void
     {
         $receiver = new DummyReceiver([
             null,
         ]);
 
+        /** @var MessageBusInterface|MockObject $bus */
         $bus = $this->getMockBuilder(MessageBusInterface::class)->getMock();
         $bus->expects($this->never())->method('dispatch');
 
@@ -100,14 +104,16 @@ class WorkerTest extends TestCase
         $worker->run();
     }
 
-    public function testWorkerDispatchesEventsOnSuccess()
+    public function testWorkerDispatchesEventsOnSuccess(): void
     {
         $envelope = new Envelope(new DummyMessage('Hello'));
         $receiver = new DummyReceiver([[$envelope]]);
 
+        /** @var MessageBusInterface|MockObject $bus */
         $bus = $this->getMockBuilder(MessageBusInterface::class)->getMock();
         $bus->method('dispatch')->willReturn($envelope);
 
+        /** @var EventDispatcherInterface|MockObject $eventDispatcher */
         $eventDispatcher = $this->getMockBuilder(EventDispatcherInterface::class)->getMock();
 
         $eventDispatcher->expects($this->exactly(5))
@@ -118,7 +124,7 @@ class WorkerTest extends TestCase
                 [$this->isInstanceOf(WorkerMessageHandledEvent::class)],
                 [$this->isInstanceOf(WorkerRunningEvent::class)],
                 [$this->isInstanceOf(WorkerStoppedEvent::class)]
-            )->willReturnCallback(function ($event) {
+            )->willReturnCallback(static function ($event) {
                 if ($event instanceof WorkerRunningEvent) {
                     $event->getWorker()->stop();
                 }
@@ -130,15 +136,17 @@ class WorkerTest extends TestCase
         $worker->run();
     }
 
-    public function testWorkerDispatchesEventsOnError()
+    public function testWorkerDispatchesEventsOnError(): void
     {
         $envelope = new Envelope(new DummyMessage('Hello'));
         $receiver = new DummyReceiver([[$envelope]]);
 
+        /** @var MessageBusInterface|MockObject $bus */
         $bus = $this->getMockBuilder(MessageBusInterface::class)->getMock();
         $exception = new \InvalidArgumentException('Oh no!');
         $bus->method('dispatch')->willThrowException($exception);
 
+        /** @var EventDispatcherInterface|MockObject $eventDispatcher */
         $eventDispatcher = $this->getMockBuilder(EventDispatcherInterface::class)->getMock();
 
         $eventDispatcher->expects($this->exactly(5))
@@ -149,7 +157,7 @@ class WorkerTest extends TestCase
                 [$this->isInstanceOf(WorkerMessageFailedEvent::class)],
                 [$this->isInstanceOf(WorkerRunningEvent::class)],
                 [$this->isInstanceOf(WorkerStoppedEvent::class)]
-            )->willReturnCallback(function ($event) {
+            )->willReturnCallback(static function ($event) {
                 if ($event instanceof WorkerRunningEvent) {
                     $event->getWorker()->stop();
                 }
@@ -161,7 +169,7 @@ class WorkerTest extends TestCase
         $worker->run();
     }
 
-    public function testTimeoutIsConfigurable()
+    public function testTimeoutIsConfigurable(): void
     {
         $apiMessage = new DummyMessage('API');
         $receiver = new DummyReceiver([
@@ -191,7 +199,7 @@ class WorkerTest extends TestCase
         $this->assertLessThan(.31, $duration);
     }
 
-    public function testWorkerWithMultipleReceivers()
+    public function testWorkerWithMultipleReceivers(): void
     {
         // envelopes, in their expected delivery order
         $envelope1 = new Envelope(new DummyMessage('message1'));
@@ -231,7 +239,7 @@ class WorkerTest extends TestCase
         $processedEnvelopes = [];
         $dispatcher = new EventDispatcher();
         $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(6));
-        $dispatcher->addListener(WorkerMessageReceivedEvent::class, function (WorkerMessageReceivedEvent $event) use (&$processedEnvelopes) {
+        $dispatcher->addListener(WorkerMessageReceivedEvent::class, static function (WorkerMessageReceivedEvent $event) use (&$processedEnvelopes) {
             $processedEnvelopes[] = $event->getEnvelope();
         });
         $worker = new Worker([$receiver1, $receiver2, $receiver3], $bus, $dispatcher);
@@ -257,7 +265,7 @@ class DummyReceiver implements ReceiverInterface
     {
         $val = array_shift($this->deliveriesOfEnvelopes);
 
-        return null === $val ? [] : $val;
+        return $val ?? [];
     }
 
     public function ack(Envelope $envelope): void
