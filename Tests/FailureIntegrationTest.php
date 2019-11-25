@@ -37,7 +37,7 @@ use Symfony\Component\Messenger\Worker;
 
 class FailureIntegrationTest extends TestCase
 {
-    public function testRequeMechanism()
+    public function testRequeMechanism(): void
     {
         $transport1 = new DummyFailureTestSenderAndReceiver();
         $transport2 = new DummyFailureTestSenderAndReceiver();
@@ -49,12 +49,12 @@ class FailureIntegrationTest extends TestCase
         ];
 
         $locator = $this->createMock(ContainerInterface::class);
-        $locator->expects($this->any())
+        $locator
             ->method('has')
             ->willReturn(true);
-        $locator->expects($this->any())
+        $locator
             ->method('get')
-            ->willReturnCallback(function ($transportName) use ($transports) {
+            ->willReturnCallback(static function ($transportName) use ($transports) {
                 return $transports[$transportName];
             });
         $senderLocator = new SendersLocator(
@@ -63,10 +63,10 @@ class FailureIntegrationTest extends TestCase
         );
 
         $retryStrategyLocator = $this->createMock(ContainerInterface::class);
-        $retryStrategyLocator->expects($this->any())
+        $retryStrategyLocator
             ->method('has')
             ->willReturn(true);
-        $retryStrategyLocator->expects($this->any())
+        $retryStrategyLocator
             ->method('get')
             ->willReturn(new MultiplierRetryStrategy(1));
 
@@ -100,9 +100,9 @@ class FailureIntegrationTest extends TestCase
         $dispatcher->addSubscriber(new SendFailedMessageToFailureTransportListener($failureTransport));
         $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
 
-        $runWorker = function (string $transportName) use ($transports, $bus, $dispatcher): ?\Throwable {
+        $runWorker = static function (string $transportName) use ($transports, $bus, $dispatcher): ?\Throwable {
             $throwable = null;
-            $failedListener = function (WorkerMessageFailedEvent $event) use (&$throwable) {
+            $failedListener = static function (WorkerMessageFailedEvent $event) use (&$throwable) {
                 $throwable = $event->getThrowable();
             };
             $dispatcher->addListener(WorkerMessageFailedEvent::class, $failedListener);
@@ -279,7 +279,7 @@ class DummyTestHandler
         return $this->timesCalled;
     }
 
-    public function setShouldThrow(bool $shouldThrow)
+    public function setShouldThrow(bool $shouldThrow): void
     {
         $this->shouldThrow = $shouldThrow;
     }

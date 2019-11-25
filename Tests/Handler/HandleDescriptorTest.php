@@ -11,7 +11,7 @@ class HandleDescriptorTest extends TestCase
     /**
      * @dataProvider provideHandlers
      */
-    public function testDescriptorNames(callable $handler, ?string $expectedHandlerString)
+    public function testDescriptorNames(callable $handler, ?string $expectedHandlerString): void
     {
         $descriptor = new HandlerDescriptor($handler);
 
@@ -20,14 +20,14 @@ class HandleDescriptorTest extends TestCase
 
     public function provideHandlers(): iterable
     {
-        yield [function () {}, 'Closure'];
+        yield [static function () {}, 'Closure'];
         yield ['var_dump', 'var_dump'];
         yield [new DummyCommandHandler(), DummyCommandHandler::class.'::__invoke'];
         yield [
             [new DummyCommandHandlerWithSpecificMethod(), 'handle'],
             DummyCommandHandlerWithSpecificMethod::class.'::handle',
         ];
-        yield [\Closure::fromCallable(function () {}), 'Closure'];
+        yield [\Closure::fromCallable(static function () {}), 'Closure'];
         yield [\Closure::fromCallable(new DummyCommandHandler()), DummyCommandHandler::class.'::__invoke'];
         yield [\Closure::bind(\Closure::fromCallable(function () {}), new \stdClass()), 'Closure'];
         yield [new class() {

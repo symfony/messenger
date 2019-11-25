@@ -35,7 +35,7 @@ class HandlersLocator implements HandlersLocatorInterface
     /**
      * {@inheritdoc}
      */
-    public function getHandlers(Envelope $envelope): iterable
+    public function getHandlers(Envelope $envelope): \Traversable
     {
         $seen = [];
 

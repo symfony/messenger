@@ -12,6 +12,7 @@
 namespace Symfony\Component\Messenger\Handler;
 
 use Symfony\Component\Messenger\Envelope;
+use Traversable;
 
 /**
  * Maps a message to a list of handlers.
@@ -25,5 +26,5 @@ interface HandlersLocatorInterface
      *
      * @return iterable|HandlerDescriptor[] Indexed by handler alias if available
      */
-    public function getHandlers(Envelope $envelope): iterable;
+    public function getHandlers(Envelope $envelope): Traversable;
 }

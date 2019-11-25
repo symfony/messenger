@@ -23,7 +23,7 @@ use Symfony\Component\Messenger\Transport\Sender\SenderInterface;
 
 class SendFailedMessageForRetryListenerTest extends TestCase
 {
-    public function testNoRetryStrategyCausesNoRetry()
+    public function testNoRetryStrategyCausesNoRetry(): void
     {
         $senderLocator = $this->createMock(ContainerInterface::class);
         $senderLocator->expects($this->never())->method('has');
@@ -40,7 +40,7 @@ class SendFailedMessageForRetryListenerTest extends TestCase
         $listener->onMessageFailed($event);
     }
 
-    public function testEnvelopeIsSentToTransportOnRetry()
+    public function testEnvelopeIsSentToTransportOnRetry(): void
     {
         $exception = new \Exception('no!');
         $envelope = new Envelope(new \stdClass());
@@ -63,12 +63,23 @@ class SendFailedMessageForRetryListenerTest extends TestCase
         $senderLocator = $this->createMock(ContainerInterface::class);
         $senderLocator->expects($this->once())->method('has')->willReturn(true);
         $senderLocator->expects($this->once())->method('get')->willReturn($sender);
-        $retryStategy = $this->createMock(RetryStrategyInterface::class);
-        $retryStategy->expects($this->once())->method('isRetryable')->willReturn(true);
-        $retryStategy->expects($this->once())->method('getWaitingTime')->willReturn(1000);
+
+        $retryStrategy = new class implements RetryStrategyInterface
+        {
+            public function isRetryable(Envelope $message): bool
+            {
+                return true;
+            }
+
+            public function getWaitingTime(Envelope $message): int
+            {
+                return 1000;
+            }
+        };
+
         $retryStrategyLocator = $this->createMock(ContainerInterface::class);
         $retryStrategyLocator->expects($this->once())->method('has')->willReturn(true);
-        $retryStrategyLocator->expects($this->once())->method('get')->willReturn($retryStategy);
+        $retryStrategyLocator->expects($this->once())->method('get')->willReturn($retryStrategy);
 
         $listener = new SendFailedMessageForRetryListener($senderLocator, $retryStrategyLocator);
 

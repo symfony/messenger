@@ -27,7 +27,7 @@ use Symfony\Component\Messenger\Transport\Receiver\ReceiverInterface;
 
 class ConsumeMessagesCommandTest extends TestCase
 {
-    public function testConfigurationWithDefaultReceiver()
+    public function testConfigurationWithDefaultReceiver(): void
     {
         $command = new ConsumeMessagesCommand($this->createMock(RoutableMessageBus::class), $this->createMock(ServiceLocator::class), $this->createMock(EventDispatcherInterface::class), null, ['amqp']);
         $inputArgument = $command->getDefinition()->getArgument('receivers');
@@ -35,7 +35,7 @@ class ConsumeMessagesCommandTest extends TestCase
         $this->assertSame(['amqp'], $inputArgument->getDefault());
     }
 
-    public function testBasicRun()
+    public function testBasicRun(): void
     {
         $envelope = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
 
@@ -67,7 +67,7 @@ class ConsumeMessagesCommandTest extends TestCase
         $this->assertStringContainsString('[OK] Consuming messages from transports "dummy-receiver"', $tester->getDisplay());
     }
 
-    public function testRunWithBusOption()
+    public function testRunWithBusOption(): void
     {
         $envelope = new Envelope(new \stdClass());
 

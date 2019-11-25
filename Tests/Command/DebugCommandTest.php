@@ -36,7 +36,7 @@ class DebugCommandTest extends TestCase
         putenv('COLUMNS=');
     }
 
-    public function testOutput()
+    public function testOutput(): void
     {
         $command = new DebugCommand([
             'command_bus' => [
@@ -111,7 +111,7 @@ TXT
         );
     }
 
-    public function testOutputWithoutMessages()
+    public function testOutputWithoutMessages(): void
     {
         $command = new DebugCommand(['command_bus' => [], 'query_bus' => []]);
 
@@ -139,7 +139,7 @@ TXT
         );
     }
 
-    public function testExceptionOnUnknownBusArgument()
+    public function testExceptionOnUnknownBusArgument(): void
     {
         $this->expectException('Symfony\Component\Console\Exception\RuntimeException');
         $this->expectExceptionMessage('Bus "unknown_bus" does not exist. Known buses are command_bus, query_bus.');

@@ -20,17 +20,17 @@ use Symfony\Component\Messenger\Tests\Fixtures\DummyMessage;
 
 class HandlersLocatorTest extends TestCase
 {
-    public function testItYieldsHandlerDescriptors()
+    public function testItYieldsHandlerDescriptors(): void
     {
         $handler = $this->createPartialMock(HandlersLocatorTestCallable::class, ['__invoke']);
         $locator = new HandlersLocator([
             DummyMessage::class => [$handler],
         ]);
 
-        $this->assertEquals([new HandlerDescriptor($handler)], iterator_to_array($locator->getHandlers(new Envelope(new DummyMessage('a')))));
+        $this->assertEquals([new HandlerDescriptor($handler)], iterator_to_array($locator->getHandlers(new Envelope(new DummyMessage('a'))), false));
     }
 
-    public function testItReturnsOnlyHandlersMatchingTransport()
+    public function testItReturnsOnlyHandlersMatchingTransport(): void
     {
         $firstHandler = $this->createPartialMock(HandlersLocatorTestCallable::class, ['__invoke']);
         $secondHandler = $this->createPartialMock(HandlersLocatorTestCallable::class, ['__invoke']);
@@ -48,7 +48,7 @@ class HandlersLocatorTest extends TestCase
             $second,
         ], iterator_to_array($locator->getHandlers(
             new Envelope(new DummyMessage('Body'), [new ReceivedStamp('transportName')])
-        )));
+        ), false));
     }
 }
 
