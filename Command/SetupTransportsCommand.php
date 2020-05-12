@@ -41,6 +41,7 @@ class SetupTransportsCommand extends Command
     {
         $this
             ->addArgument('transport', InputArgument::OPTIONAL, 'Name of the transport to setup', null)
+            ->setDescription('Prepares the needed infrastructure for the transport')
             ->setHelp(<<<EOF
 The <info>%command.name%</info> command setups the transports:
 
