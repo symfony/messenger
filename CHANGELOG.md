@@ -4,6 +4,7 @@ CHANGELOG
 5.4
 ---
 
+ * Add the `LogRetryAsWarningInterface` for exceptions to log retries as warnings instead of errors allowing the same behaviour as RecoverableExceptionInterface while still using the retry strategy
  * Add `StopWorkerExceptionInterface` and its implementation `StopWorkerException` to stop the worker.
  * Add support for resetting container services after each messenger message.
  * Added `WorkerMetadata` class which allows you to access the configuration details of a worker, like `queueNames` and `transportNames` it consumes from.
