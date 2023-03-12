@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+7.3
+---
+
+ * Add `SentForRetryStamp` that identifies whether a failed message was sent for retry
+
 7.2
 ---
 
