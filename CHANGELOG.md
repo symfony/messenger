@@ -6,6 +6,7 @@ CHANGELOG
 
  * Add `--exclude-receivers` option to the `messenger:consume command`
  * Allow any `ServiceResetterInterface` implementation in `ResetServicesListener`
+ * Add `Symfony\Component\Messenger\Middleware\AddDefaultStampsMiddleware` and `Symfony\Component\Messenger\Message\DefaultStampsProviderInterface`
 
 7.3
 ---
