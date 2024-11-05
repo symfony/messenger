@@ -173,7 +173,7 @@ class Serializer implements SerializerInterface
             'json' => 'application/json',
             'xml' => 'application/xml',
             'yml',
-            'yaml' => 'application/x-yaml',
+            'yaml' => 'application/yaml',
             'csv' => 'text/csv',
             default => null,
         };
