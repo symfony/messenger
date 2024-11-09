@@ -86,7 +86,7 @@ class Worker
             // if queue names are specified, all receivers must implement the QueueReceiverInterface
             foreach ($this->receivers as $transportName => $receiver) {
                 if (!$receiver instanceof QueueReceiverInterface) {
-                    throw new RuntimeException(sprintf('Receiver for "%s" does not implement "%s".', $transportName, QueueReceiverInterface::class));
+                    throw new RuntimeException(\sprintf('Receiver for "%s" does not implement "%s".', $transportName, QueueReceiverInterface::class));
                 }
             }
         }
@@ -242,6 +242,7 @@ class Worker
 
         $this->eventDispatcher?->dispatch(new WorkerRateLimitedEvent($rateLimiter, $transportName));
         $rateLimiter->reserve()->wait();
+        $rateLimiter->consume();
     }
 
     private function flush(bool $force): bool
