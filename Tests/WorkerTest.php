@@ -49,6 +49,7 @@ use Symfony\Component\Messenger\Transport\Receiver\QueueReceiverInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ReceiverInterface;
 use Symfony\Component\Messenger\Worker;
 use Symfony\Component\RateLimiter\RateLimiterFactory;
+use Symfony\Component\RateLimiter\Reservation;
 use Symfony\Component\RateLimiter\Storage\InMemoryStorage;
 
 /**
@@ -439,6 +440,8 @@ class WorkerTest extends TestCase
         $envelope = [
             new Envelope(new DummyMessage('message1')),
             new Envelope(new DummyMessage('message2')),
+            new Envelope(new DummyMessage('message3')),
+            new Envelope(new DummyMessage('message4')),
         ];
         $receiver = new DummyReceiver([$envelope]);
 
@@ -446,14 +449,12 @@ class WorkerTest extends TestCase
         $bus->method('dispatch')->willReturnArgument(0);
 
         $eventDispatcher = new EventDispatcher();
-        $eventDispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(2));
+        $eventDispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(4));
 
         $rateLimitCount = 0;
-        $listener = function (WorkerRateLimitedEvent $event) use (&$rateLimitCount) {
+        $eventDispatcher->addListener(WorkerRateLimitedEvent::class, static function () use (&$rateLimitCount) {
             ++$rateLimitCount;
-            $event->getLimiter()->reset(); // Reset limiter to continue test
-        };
-        $eventDispatcher->addListener(WorkerRateLimitedEvent::class, $listener);
+        });
 
         $rateLimitFactory = new RateLimiterFactory([
             'id' => 'bus',
@@ -462,11 +463,14 @@ class WorkerTest extends TestCase
             'interval' => '1 minute',
         ], new InMemoryStorage());
 
+        ClockMock::register(Reservation::class);
+        ClockMock::register(InMemoryStorage::class);
+
         $worker = new Worker(['bus' => $receiver], $bus, $eventDispatcher, null, ['bus' => $rateLimitFactory], new MockClock());
         $worker->run();
 
-        $this->assertCount(2, $receiver->getAcknowledgedEnvelopes());
-        $this->assertEquals(1, $rateLimitCount);
+        $this->assertSame(4, $receiver->getAcknowledgeCount());
+        $this->assertSame(3, $rateLimitCount);
     }
 
     public function testWorkerShouldLogOnStop()

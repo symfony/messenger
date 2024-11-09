@@ -257,6 +257,7 @@ class Worker
 
         $this->eventDispatcher?->dispatch(new WorkerRateLimitedEvent($rateLimiter, $transportName));
         $rateLimiter->reserve()->wait();
+        $rateLimiter->consume();
     }
 
     private function flush(bool $force): bool
