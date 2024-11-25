@@ -241,7 +241,7 @@ EOF;
 
         $receiver->expects($this->once())->method('find')
             ->willReturn(Envelope::wrap(new \stdClass(), [
-                new SentToFailureTransportStamp($originalTransportName)
+                new SentToFailureTransportStamp($originalTransportName),
             ]));
 
         $receiver->expects($this->never())->method('ack');
