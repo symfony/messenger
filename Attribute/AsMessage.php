@@ -23,7 +23,7 @@ class AsMessage
         /**
          * Name of the transports to which the message should be routed.
          */
-        public null|string|array $transport = null,
+        public string|array|null $transport = null,
     ) {
     }
 }
