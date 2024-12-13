@@ -8,6 +8,7 @@ CHANGELOG
  * Add `SentForRetryStamp` that identifies whether a failed message was sent for retry
  * Add `Symfony\Component\Messenger\Middleware\DeduplicateMiddleware` and `Symfony\Component\Messenger\Stamp\DeduplicateStamp`
  * Add `--class-filter` option to the `messenger:failed:remove` command
+ * Add `$stamps` parameter to `HandleTrait::handle`
 
 7.2
 ---
