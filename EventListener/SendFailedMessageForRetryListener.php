@@ -63,12 +63,7 @@ class SendFailedMessageForRetryListener implements EventSubscriberInterface
 
             ++$retryCount;
 
-            $delay = null;
-            if ($throwable instanceof RecoverableExceptionInterface && method_exists($throwable, 'getRetryDelay')) {
-                $delay = $throwable->getRetryDelay();
-            }
-
-            $delay ??= $retryStrategy->getWaitingTime($envelope, $throwable);
+            $delay = $this->getWaitingTime($envelope, $throwable, $retryStrategy);
 
             $this->logger?->warning('Error thrown while handling message {class}. Sending for retry #{retryCount} using {delay} ms delay. Error: "{error}"', $context + ['retryCount' => $retryCount, 'delay' => $delay, 'error' => $throwable->getMessage(), 'exception' => $throwable]);
 
@@ -146,6 +141,30 @@ class SendFailedMessageForRetryListener implements EventSubscriberInterface
         }
 
         return $retryStrategy->isRetryable($envelope, $e);
+    }
+
+    private function getWaitingTime(Envelope $envelope, \Throwable $throwable, RetryStrategyInterface $retryStrategy): int
+    {
+        $delay = null;
+        if ($throwable instanceof RecoverableExceptionInterface && method_exists($throwable, 'getRetryDelay')) {
+            $delay = $throwable->getRetryDelay();
+        }
+
+        if ($throwable instanceof HandlerFailedException) {
+            foreach ($throwable->getWrappedExceptions() as $nestedException) {
+                if (!$nestedException instanceof RecoverableExceptionInterface
+                    || !method_exists($nestedException, 'getRetryDelay')
+                    || 0 > $retryDelay = $nestedException->getRetryDelay() ?? -1
+                ) {
+                    continue;
+                }
+                if ($retryDelay < ($delay ?? \PHP_INT_MAX)) {
+                    $delay = $retryDelay;
+                }
+            }
+        }
+
+        return $delay ?? $retryStrategy->getWaitingTime($envelope, $throwable);
     }
 
     private function getRetryStrategyForTransport(string $alias): ?RetryStrategyInterface
