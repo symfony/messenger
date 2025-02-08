@@ -29,7 +29,7 @@ final class DeduplicateMiddlewareTest extends MiddlewareTestCase
         $envelope = new Envelope($message);
 
         $lockFactory = $this->createMock(LockFactory::class);
-        $lockFactory->expects($this->never())->method('createLock');
+        $lockFactory->expects($this->never())->method('createLockFromKey');
 
         $decorator = new DeduplicateMiddleware($lockFactory);
 

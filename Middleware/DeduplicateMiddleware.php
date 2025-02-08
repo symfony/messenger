@@ -29,7 +29,7 @@ final class DeduplicateMiddleware implements MiddlewareInterface
         }
 
         if (!$envelope->last(ReceivedStamp::class)) {
-            $lock = $this->lockFactory->createLockFromKey($stamp->getKey(), $stamp->getTtl(), autoRelease: false);
+            $lock = $this->lockFactory->createLockFromKey($stamp->getKey(), $stamp->getTtl(), false);
 
             if (!$lock->acquire()) {
                 return $envelope;
