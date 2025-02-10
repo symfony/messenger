@@ -20,6 +20,7 @@ use Symfony\Component\Messenger\Event\WorkerMessageRetriedEvent;
 use Symfony\Component\Messenger\EventListener\SendFailedMessageForRetryListener;
 use Symfony\Component\Messenger\Exception\HandlerFailedException;
 use Symfony\Component\Messenger\Exception\RecoverableMessageHandlingException;
+use Symfony\Component\Messenger\Retry\MultiplierRetryStrategy;
 use Symfony\Component\Messenger\Retry\RetryStrategyInterface;
 use Symfony\Component\Messenger\Stamp\DelayStamp;
 use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
@@ -56,7 +57,9 @@ class SendFailedMessageForRetryListenerTest extends TestCase
         $sender->expects($this->never())->method('send');
         $sendersLocator = new Container();
         $sendersLocator->set('my_receiver', $sender);
-        $listener = new SendFailedMessageForRetryListener($sendersLocator, new Container());
+        $retryStrategyLocator = new Container();
+        $retryStrategyLocator->set('my_receiver', new MultiplierRetryStrategy(0));
+        $listener = new SendFailedMessageForRetryListener($sendersLocator, $retryStrategyLocator);
 
         $exception = new \Exception('no!');
         $envelope = new Envelope(new \stdClass());
