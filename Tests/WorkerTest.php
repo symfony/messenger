@@ -605,18 +605,17 @@ class WorkerTest extends TestCase
             if (0 === $i) {
                 $this->assertFalse($event->isWorkerIdle());
                 $this->assertSame(0, $after - $before);
-            } else if (1 === $i) {
+            } elseif (1 === $i) {
                 $this->assertTrue($event->isWorkerIdle());
                 $this->assertSame(1, $after - $before);
-            } else if (3 === $i) {
+            } elseif (3 === $i) {
                 // Wait a few idle phases before stopping.
                 $this->assertSame(1, $after - $before);
                 $event->getWorker()->stop();
             }
 
-            $i++;
-        }, PHP_INT_MIN);
-
+            ++$i;
+        }, \PHP_INT_MIN);
 
         $worker = new Worker(['transport' => $receiver], $bus, $dispatcher);
 
