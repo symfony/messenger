@@ -176,7 +176,11 @@ TXT
     {
         $command = new DebugCommand(['command_bus' => [], 'query_bus' => []]);
         $application = new Application();
-        $application->add($command);
+        if (method_exists($application, 'addCommand')) {
+            $application->addCommand($command);
+        } else {
+            $application->add($command);
+        }
         $tester = new CommandCompletionTester($application->get('debug:messenger'));
         $this->assertSame($expectedSuggestions, $tester->complete($input));
     }
