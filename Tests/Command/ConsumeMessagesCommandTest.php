@@ -12,6 +12,8 @@
 namespace Symfony\Component\Messenger\Tests\Command;
 
 use PHPUnit\Framework\TestCase;
+use Psr\Log\LoggerInterface;
+use Psr\Log\LoggerTrait;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Exception\InvalidOptionException;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
@@ -224,6 +226,49 @@ class ConsumeMessagesCommandTest extends TestCase
         $this->assertSame(0, $tester->getStatusCode());
         $this->assertStringContainsString('[OK] Consuming messages from transport "dummy-receiver"', $tester->getDisplay());
     }
+
+    public function testRunWithMemoryLimit()
+    {
+        $envelope = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
+
+        $receiver = $this->createMock(ReceiverInterface::class);
+        $receiver->method('get')->willReturn([$envelope]);
+
+        $receiverLocator = $this->createMock(ContainerInterface::class);
+        $receiverLocator->method('has')->with('dummy-receiver')->willReturn(true);
+        $receiverLocator->method('get')->with('dummy-receiver')->willReturn($receiver);
+
+        $bus = $this->createMock(MessageBusInterface::class);
+
+        $busLocator = $this->createMock(ContainerInterface::class);
+        $busLocator->method('has')->with('dummy-bus')->willReturn(true);
+        $busLocator->method('get')->with('dummy-bus')->willReturn($bus);
+
+        $logger = new class() implements LoggerInterface {
+            use LoggerTrait;
+
+            public array $logs = [];
+
+            public function log(...$args): void
+            {
+                $this->logs[] = $args;
+            }
+        };
+        $command = new ConsumeMessagesCommand(new RoutableMessageBus($busLocator), $receiverLocator, new EventDispatcher(), $logger);
+
+        $application = new Application();
+        $application->add($command);
+        $tester = new CommandTester($application->get('messenger:consume'));
+        $tester->execute([
+            'receivers' => ['dummy-receiver'],
+            '--memory-limit' => '1.5M',
+        ]);
+
+        $this->assertSame(0, $tester->getStatusCode());
+        $this->assertStringContainsString('[OK] Consuming messages from transport "dummy-receiver"', $tester->getDisplay());
+        $this->assertStringContainsString('The worker will automatically exit once it has exceeded 1.5M of memory', $tester->getDisplay());
+
+        $this->assertSame(1572864, $logger->logs[1][2]['limit']);
 
     public function testRunWithAllOption()
     {
