@@ -313,7 +313,7 @@ EOF
         } elseif (str_starts_with($max, '0')) {
             $max = \intval($max, 8);
         } else {
-            $max = (int) $max;
+            $max = (float) $max;
         }
 
         switch (substr(rtrim($memoryLimit, 'b'), -1)) {
@@ -326,6 +326,6 @@ EOF
             case 'k': $max *= 1024;
         }
 
-        return $max;
+        return (int) $max;
     }
 }
