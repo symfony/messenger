@@ -235,7 +235,11 @@ class ConsumeMessagesCommandTest extends TestCase
         $command = new ConsumeMessagesCommand(new RoutableMessageBus($busLocator), $receiverLocator, new EventDispatcher(), $logger);
 
         $application = new Application();
-        $application->add($command);
+        if (method_exists($application, 'addCommand')) {
+            $application->addCommand($command);
+        } else {
+            $application->add($command);
+        }
         $tester = new CommandTester($application->get('messenger:consume'));
         $tester->execute([
             'receivers' => ['dummy-receiver'],
