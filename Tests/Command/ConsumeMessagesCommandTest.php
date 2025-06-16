@@ -214,15 +214,13 @@ class ConsumeMessagesCommandTest extends TestCase
         $receiver = $this->createMock(ReceiverInterface::class);
         $receiver->method('get')->willReturn([$envelope]);
 
-        $receiverLocator = $this->createMock(ContainerInterface::class);
-        $receiverLocator->method('has')->with('dummy-receiver')->willReturn(true);
-        $receiverLocator->method('get')->with('dummy-receiver')->willReturn($receiver);
+        $receiverLocator = new Container();
+        $receiverLocator->set('dummy-receiver', $receiver);
 
         $bus = $this->createMock(MessageBusInterface::class);
 
-        $busLocator = $this->createMock(ContainerInterface::class);
-        $busLocator->method('has')->with('dummy-bus')->willReturn(true);
-        $busLocator->method('get')->with('dummy-bus')->willReturn($bus);
+        $busLocator = new Container();
+        $busLocator->set('dummy-bus', $bus);
 
         $logger = new class() implements LoggerInterface {
             use LoggerTrait;
@@ -249,6 +247,7 @@ class ConsumeMessagesCommandTest extends TestCase
         $this->assertStringContainsString('The worker will automatically exit once it has exceeded 1.5M of memory', $tester->getDisplay());
 
         $this->assertSame(1572864, $logger->logs[1][2]['limit']);
+    }
 
     public function testRunWithAllOption()
     {
