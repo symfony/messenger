@@ -35,7 +35,7 @@ class FailedMessagesShowCommand extends AbstractFailedMessagesCommand
             ->setDefinition([
                 new InputArgument('id', InputArgument::OPTIONAL, 'Specific message id to show'),
                 new InputOption('max', null, InputOption::VALUE_REQUIRED, 'Maximum number of messages to list', 50),
-                new InputOption('transport', null, InputOption::VALUE_OPTIONAL, 'Use a specific failure transport', self::DEFAULT_TRANSPORT_OPTION),
+                new InputOption('transport', null, InputOption::VALUE_REQUIRED, 'Use a specific failure transport', self::DEFAULT_TRANSPORT_OPTION),
                 new InputOption('stats', null, InputOption::VALUE_NONE, 'Display the message count by class'),
                 new InputOption('class-filter', null, InputOption::VALUE_REQUIRED, 'Filter by a specific class name'),
             ])
