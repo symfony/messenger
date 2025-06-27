@@ -35,7 +35,7 @@ class FailedMessagesRemoveCommand extends AbstractFailedMessagesCommand
                 new InputArgument('id', InputArgument::OPTIONAL | InputArgument::IS_ARRAY, 'Specific message id(s) to remove'),
                 new InputOption('all', null, InputOption::VALUE_NONE, 'Remove all failed messages from the transport'),
                 new InputOption('force', null, InputOption::VALUE_NONE, 'Force the operation without confirmation'),
-                new InputOption('transport', null, InputOption::VALUE_OPTIONAL, 'Use a specific failure transport', self::DEFAULT_TRANSPORT_OPTION),
+                new InputOption('transport', null, InputOption::VALUE_REQUIRED, 'Use a specific failure transport', self::DEFAULT_TRANSPORT_OPTION),
                 new InputOption('show-messages', null, InputOption::VALUE_NONE, 'Display messages before removing it (if multiple ids are given)'),
             ])
             ->setHelp(<<<'EOF'
