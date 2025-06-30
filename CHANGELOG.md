@@ -4,6 +4,7 @@ CHANGELOG
 7.4
 ---
 
+ * Add `--exclude-receivers` option to the `messenger:consume command`
  * Allow any `ServiceResetterInterface` implementation in `ResetServicesListener`
 
 7.3
