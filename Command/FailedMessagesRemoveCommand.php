@@ -146,7 +146,7 @@ EOF
                 }
 
                 $ids[] = $this->getMessageId($envelope);
-            };
+            }
         } finally {
             $this->phpSerializer?->rejectPhpIncompleteClass();
         }
