@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+7.4
+---
+
+ * Allow any `ServiceResetterInterface` implementation in `ResetServicesListener`
+
 7.3
 ---
 
