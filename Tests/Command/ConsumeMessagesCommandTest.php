@@ -242,7 +242,7 @@ class ConsumeMessagesCommandTest extends TestCase
         $busLocator = new Container();
         $busLocator->set('dummy-bus', $bus);
 
-        $logger = new class() implements LoggerInterface {
+        $logger = new class implements LoggerInterface {
             use LoggerTrait;
 
             public array $logs = [];
