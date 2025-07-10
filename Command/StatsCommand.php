@@ -71,7 +71,7 @@ EOF
         $uncountableTransports = [];
         foreach ($transportNames as $transportName) {
             if (!$this->transportLocator->has($transportName)) {
-                $io->warning(sprintf('The "%s" transport does not exist.', $transportName));
+                $io->warning(\sprintf('The "%s" transport does not exist.', $transportName));
 
                 continue;
             }
@@ -87,7 +87,7 @@ EOF
         $io->table(['Transport', 'Count'], $outputTable);
 
         if ($uncountableTransports) {
-            $io->note(sprintf('Unable to get message count for the following transports: "%s".', implode('", "', $uncountableTransports)));
+            $io->note(\sprintf('Unable to get message count for the following transports: "%s".', implode('", "', $uncountableTransports)));
         }
 
         return 0;

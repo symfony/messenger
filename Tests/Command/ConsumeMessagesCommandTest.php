@@ -233,7 +233,7 @@ class ConsumeMessagesCommandTest extends TestCase
         $busLocator->method('has')->with('dummy-bus')->willReturn(true);
         $busLocator->method('get')->with('dummy-bus')->willReturn($bus);
 
-        $logger = new class() implements LoggerInterface {
+        $logger = new class implements LoggerInterface {
             use LoggerTrait;
 
             public array $logs = [];
