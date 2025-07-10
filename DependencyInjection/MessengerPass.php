@@ -270,7 +270,7 @@ class MessengerPass implements CompilerPassInterface
                         $failureTransportsMap[$tag['alias']] = $receiverMapping[$id];
                     }
                 }
-                if (!isset($tag['is_consumable']) || $tag['is_consumable'] !== false) {
+                if (!isset($tag['is_consumable']) || false !== $tag['is_consumable']) {
                     $consumableReceiverNames[] = $tag['alias'] ?? $id;
                 }
             }
