@@ -221,7 +221,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
         );
 
         $tester = new CommandTester($command);
-        $tester->execute(['--class-filter' => "stdClass", '--force' => true, '--show-messages' => true]);
+        $tester->execute(['--class-filter' => 'stdClass', '--force' => true, '--show-messages' => true]);
 
         $this->assertStringContainsString('Can you confirm you want to remove 2 messages? (yes/no)', $tester->getDisplay());
         $this->assertStringContainsString('Failed Message Details', $tester->getDisplay());
