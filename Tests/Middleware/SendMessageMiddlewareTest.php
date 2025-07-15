@@ -41,7 +41,7 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
 
         $envelope = $middleware->handle($envelope, $this->getStackMock(false));
 
-        /* @var SentStamp $stamp */
+        /** @var SentStamp $stamp */
         $this->assertInstanceOf(SentStamp::class, $stamp = $envelope->last(SentStamp::class), 'it adds a sent stamp');
         $this->assertSame('my_sender', $stamp->getSenderAlias());
         $this->assertSame($sender::class, $stamp->getSenderClass());
