@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+8.0
+---
+
+ * Remove `text` format when using the `messenger:stats` command; use `txt` instead
+
 7.4
 ---
 
