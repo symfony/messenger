@@ -63,4 +63,9 @@ class DummyReceiver implements ReceiverInterface
     {
         return $this->acknowledgedEnvelopes;
     }
+
+    public function getRejectedEnvelopes(): array
+    {
+        return $this->rejectedEnvelopes;
+    }
 }
