@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Messenger\Tests\Command;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Exception\RuntimeException;
@@ -169,9 +170,7 @@ TXT
         $tester->execute(['bus' => 'unknown_bus'], ['decorated' => false]);
     }
 
-    /**
-     * @dataProvider provideCompletionSuggestions
-     */
+    #[DataProvider('provideCompletionSuggestions')]
     public function testComplete(array $input, array $expectedSuggestions)
     {
         $command = new DebugCommand(['command_bus' => [], 'query_bus' => []]);

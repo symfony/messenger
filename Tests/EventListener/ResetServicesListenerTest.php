@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Messenger\Tests\EventListener;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetter;
 use Symfony\Component\Messenger\Event\WorkerRunningEvent;
@@ -27,9 +28,7 @@ class ResetServicesListenerTest extends TestCase
         yield [false];
     }
 
-    /**
-     * @dataProvider provideResetServices
-     */
+    #[DataProvider('provideResetServices')]
     public function testResetServices(bool $shouldReset)
     {
         $resettableService = $this->createMock(ResetInterface::class);
