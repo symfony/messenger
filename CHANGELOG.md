@@ -5,6 +5,7 @@ CHANGELOG
 ---
 
  * Remove `text` format when using the `messenger:stats` command; use `txt` instead
+ * Add method `getRetryDelay()` to `RecoverableExceptionInterface`
 
 7.4
 ---
