@@ -41,7 +41,6 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
 
         $envelope = $middleware->handle($envelope, $this->getStackMock(false));
 
-        /** @var SentStamp $stamp */
         $this->assertInstanceOf(SentStamp::class, $stamp = $envelope->last(SentStamp::class), 'it adds a sent stamp');
         $this->assertSame('my_sender', $stamp->getSenderAlias());
         $this->assertSame($sender::class, $stamp->getSenderClass());
@@ -59,7 +58,6 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
         $sender->expects($this->once())
             ->method('send')
             ->with($this->callback(function (Envelope $envelope) {
-                /** @var SentStamp|null $lastSentStamp */
                 $lastSentStamp = $envelope->last(SentStamp::class);
 
                 // last SentStamp should be the "foo" alias
@@ -69,7 +67,6 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
         $sender2->expects($this->once())
             ->method('send')
             ->with($this->callback(function (Envelope $envelope) {
-                /** @var SentStamp|null $lastSentStamp */
                 $lastSentStamp = $envelope->last(SentStamp::class);
 
                 // last SentStamp should be the "bar" alias
@@ -79,7 +76,6 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
 
         $envelope = $middleware->handle($envelope, $this->getStackMock(false));
 
-        /** @var SentStamp[] $sentStamps */
         $sentStamps = $envelope->all(SentStamp::class);
         $this->assertCount(2, $sentStamps);
     }
