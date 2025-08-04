@@ -58,7 +58,6 @@ class RouterContextMiddleware implements MiddlewareInterface
         $currentPathInfo = $context->getPathInfo();
         $currentQueryString = $context->getQueryString();
 
-        /** @var RouterContextStamp $contextStamp */
         $context
             ->setBaseUrl($contextStamp->getBaseUrl())
             ->setMethod($contextStamp->getMethod())
