@@ -176,7 +176,7 @@ EOF
         $tester->setInputs([0]);
         $tester->execute([]);
 
-        $this->assertStringContainsString(sprintf(<<<EOF
+        $this->assertStringContainsString(\sprintf(<<<EOF
 15   stdClass   %s   Things are bad!
 EOF
             ,
@@ -334,7 +334,7 @@ EOF;
         $command = new FailedMessagesShowCommand($failureTransportName, $serviceLocator);
         $tester = new CommandTester($command);
         $tester->execute(['id' => 42], ['verbosity' => OutputInterface::VERBOSITY_VERY_VERBOSE]);
-        $this->assertStringMatchesFormat(sprintf(<<<'EOF'
+        $this->assertStringMatchesFormat(\sprintf(<<<'EOF'
 %%A
 Exception:
 ==========
@@ -384,7 +384,7 @@ EOF
 
         $tester = new CommandTester($command);
         $tester->execute(['--transport' => $failureTransportName]);
-        $this->assertStringContainsString(sprintf(<<<EOF
+        $this->assertStringContainsString(\sprintf(<<<EOF
 15   stdClass   %s   Things are bad!
 EOF
             ,
