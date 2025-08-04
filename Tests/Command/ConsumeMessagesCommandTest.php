@@ -11,6 +11,7 @@
 
 namespace Symfony\Component\Messenger\Tests\Command;
 
+use PHPUnit\Framework\Attributes\DataProvider;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Psr\Log\LoggerTrait;
@@ -109,9 +110,7 @@ class ConsumeMessagesCommandTest extends TestCase
         yield [false];
     }
 
-    /**
-     * @dataProvider provideRunWithResetServicesOption
-     */
+    #[DataProvider('provideRunWithResetServicesOption')]
     public function testRunWithResetServicesOption(bool $shouldReset)
     {
         $envelope = new Envelope(new \stdClass());
@@ -147,9 +146,7 @@ class ConsumeMessagesCommandTest extends TestCase
         $this->assertStringContainsString('[OK] Consuming messages from transport "dummy-receiver"', $tester->getDisplay());
     }
 
-    /**
-     * @dataProvider getInvalidOptions
-     */
+    #[DataProvider('getInvalidOptions')]
     public function testRunWithInvalidOption(string $option, string $value, string $expectedMessage)
     {
         $receiverLocator = new Container();
@@ -287,9 +284,7 @@ class ConsumeMessagesCommandTest extends TestCase
         $this->assertStringContainsString('[OK] Consuming messages from transports "dummy-receiver1, dummy-receiver2"', $tester->getDisplay());
     }
 
-    /**
-     * @dataProvider provideCompletionSuggestions
-     */
+    #[DataProvider('provideCompletionSuggestions')]
     public function testComplete(array $input, array $expectedSuggestions)
     {
         $bus = $this->createMock(RoutableMessageBus::class);
