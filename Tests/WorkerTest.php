@@ -38,6 +38,8 @@ use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Middleware\HandleMessageMiddleware;
 use Symfony\Component\Messenger\Stamp\ConsumedByWorkerStamp;
+use Symfony\Component\Messenger\Stamp\FlushBatchHandlersStamp;
+use Symfony\Component\Messenger\Stamp\NoAutoAckStamp;
 use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use Symfony\Component\Messenger\Stamp\SentStamp;
 use Symfony\Component\Messenger\Stamp\StampInterface;
@@ -583,6 +585,49 @@ class WorkerTest extends TestCase
         $worker->run();
 
         $this->assertSame($expectedMessages, $handler->processedMessages);
+    }
+
+    public function testFlushRemovesNoAutoAckStampOnException()
+    {
+        $envelope = new Envelope(new DummyMessage('Test'));
+        $receiver = new DummyReceiver([[$envelope]]);
+
+        $bus = new class implements MessageBusInterface {
+            public function dispatch(object $message, array $stamps = []): Envelope
+            {
+                $envelope = Envelope::wrap($message, $stamps);
+                if ($envelope->last(FlushBatchHandlersStamp::class)) {
+                    throw new \RuntimeException('Flush failed');
+                }
+
+                return $envelope;
+            }
+        };
+
+        $dispatcher = new EventDispatcher();
+        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) {
+            static $calls = 0;
+            if (++$calls >= 2) {
+                $event->getWorker()->stop();
+            }
+        });
+
+        $worker = new Worker(['transport' => $receiver], $bus, $dispatcher, clock: new MockClock());
+
+        $reflection = new \ReflectionClass($worker);
+        $unacksProperty = $reflection->getProperty('unacks');
+        $unacks = $unacksProperty->getValue($worker);
+        $dummyHandler = new DummyBatchHandler();
+        $envelopeWithNoAutoAck = $envelope->with(new NoAutoAckStamp(new HandlerDescriptor($dummyHandler)));
+        $unacks->attach($dummyHandler, [$envelopeWithNoAutoAck, 'transport']);
+
+        $worker->run();
+
+        $this->assertSame(1, $receiver->getRejectCount());
+        $rejectedEnvelopes = $receiver->getRejectedEnvelopes();
+        $this->assertCount(1, $rejectedEnvelopes);
+        $rejectedEnvelope = $rejectedEnvelopes[0];
+        $this->assertNull($rejectedEnvelope->last(NoAutoAckStamp::class));
     }
 }
 
