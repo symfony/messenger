@@ -101,8 +101,8 @@ class DebugCommandTest extends TestCase
              --------------------------------------------------------------------------------------- 
 
 
-            TXT
-            , $tester->getDisplay(true)
+            TXT,
+            $tester->getDisplay(true)
         );
 
         $tester->execute(['bus' => 'query_bus'], ['decorated' => false]);
@@ -127,8 +127,8 @@ class DebugCommandTest extends TestCase
              --------------------------------------------------------------------------------------- 
 
 
-            TXT
-            , $tester->getDisplay(true)
+            TXT,
+            $tester->getDisplay(true)
         );
     }
 
@@ -155,8 +155,8 @@ class DebugCommandTest extends TestCase
              [WARNING] No handled message found in bus "query_bus".                                                                 
 
 
-            TXT
-            , $tester->getDisplay(true)
+            TXT,
+            $tester->getDisplay(true)
         );
     }
 
