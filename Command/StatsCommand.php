@@ -44,18 +44,18 @@ class StatsCommand extends Command
             ->addArgument('transport_names', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'List of transports\' names')
             ->addOption('format', '', InputOption::VALUE_REQUIRED, \sprintf('The output format ("%s")', implode('", "', $this->getAvailableFormatOptions())), 'txt')
             ->setHelp(<<<EOF
-The <info>%command.name%</info> command counts the messages for all the transports:
+                The <info>%command.name%</info> command counts the messages for all the transports:
 
-    <info>php %command.full_name%</info>
+                    <info>php %command.full_name%</info>
 
-Or specific transports only:
+                Or specific transports only:
 
-    <info>php %command.full_name% <transportNames></info>
+                    <info>php %command.full_name% <transportNames></info>
 
-The <info>--format</info> option specifies the format of the command output:
+                The <info>--format</info> option specifies the format of the command output:
 
-  <info>php %command.full_name% --format=json</info>
-EOF
+                  <info>php %command.full_name% --format=json</info>
+                EOF
             )
         ;
     }
