@@ -80,49 +80,49 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
                 new InputOption('keepalive', null, InputOption::VALUE_OPTIONAL, 'Whether to use the transport\'s keepalive mechanism if implemented', self::DEFAULT_KEEPALIVE_INTERVAL),
             ])
             ->setHelp(<<<'EOF'
-The <info>%command.name%</info> command consumes messages and dispatches them to the message bus.
+                The <info>%command.name%</info> command consumes messages and dispatches them to the message bus.
 
-    <info>php %command.full_name% <receiver-name></info>
+                    <info>php %command.full_name% <receiver-name></info>
 
-To receive from multiple transports, pass each name:
+                To receive from multiple transports, pass each name:
 
-    <info>php %command.full_name% receiver1 receiver2</info>
+                    <info>php %command.full_name% receiver1 receiver2</info>
 
-Use the --limit option to limit the number of messages received:
+                Use the --limit option to limit the number of messages received:
 
-    <info>php %command.full_name% <receiver-name> --limit=10</info>
+                    <info>php %command.full_name% <receiver-name> --limit=10</info>
 
-Use the --failure-limit option to stop the worker when the given number of failed messages is reached:
+                Use the --failure-limit option to stop the worker when the given number of failed messages is reached:
 
-    <info>php %command.full_name% <receiver-name> --failure-limit=2</info>
+                    <info>php %command.full_name% <receiver-name> --failure-limit=2</info>
 
-Use the --memory-limit option to stop the worker if it exceeds a given memory usage limit. You can use shorthand byte values [K, M or G]:
+                Use the --memory-limit option to stop the worker if it exceeds a given memory usage limit. You can use shorthand byte values [K, M or G]:
 
-    <info>php %command.full_name% <receiver-name> --memory-limit=128M</info>
+                    <info>php %command.full_name% <receiver-name> --memory-limit=128M</info>
 
-Use the --time-limit option to stop the worker when the given time limit (in seconds) is reached.
-If a message is being handled, the worker will stop after the processing is finished:
+                Use the --time-limit option to stop the worker when the given time limit (in seconds) is reached.
+                If a message is being handled, the worker will stop after the processing is finished:
 
-    <info>php %command.full_name% <receiver-name> --time-limit=3600</info>
+                    <info>php %command.full_name% <receiver-name> --time-limit=3600</info>
 
-Use the --bus option to specify the message bus to dispatch received messages
-to instead of trying to determine it automatically. This is required if the
-messages didn't originate from Messenger:
+                Use the --bus option to specify the message bus to dispatch received messages
+                to instead of trying to determine it automatically. This is required if the
+                messages didn't originate from Messenger:
 
-    <info>php %command.full_name% <receiver-name> --bus=event_bus</info>
+                    <info>php %command.full_name% <receiver-name> --bus=event_bus</info>
 
-Use the --queues option to limit a receiver to only certain queues (only supported by some receivers):
+                Use the --queues option to limit a receiver to only certain queues (only supported by some receivers):
 
-    <info>php %command.full_name% <receiver-name> --queues=fasttrack</info>
+                    <info>php %command.full_name% <receiver-name> --queues=fasttrack</info>
 
-Use the --no-reset option to prevent services resetting after each message (may lead to leaking services' state between messages):
+                Use the --no-reset option to prevent services resetting after each message (may lead to leaking services' state between messages):
 
-    <info>php %command.full_name% <receiver-name> --no-reset</info>
+                    <info>php %command.full_name% <receiver-name> --no-reset</info>
 
-Use the --all option to consume from all receivers:
+                Use the --all option to consume from all receivers:
 
-    <info>php %command.full_name% --all</info>
-EOF
+                    <info>php %command.full_name% --all</info>
+                EOF
             )
         ;
     }

@@ -64,44 +64,44 @@ class DebugCommandTest extends TestCase
 
         $this->assertSame(<<<TXT
 
-Messenger
-=========
+            Messenger
+            =========
 
-command_bus
------------
+            command_bus
+            -----------
 
- The following messages can be dispatched:
+             The following messages can be dispatched:
 
- ----------------------------------------------------------------------------------------------------------- 
-  Symfony\Component\Messenger\Tests\Fixtures\DummyCommand                                                    
-      handled by Symfony\Component\Messenger\Tests\Fixtures\DummyCommandHandler (when option1=1, option2=2)  
-                                                                                                             
-  Used whenever a test needs to show a message with a class description.                                     
-  Symfony\Component\Messenger\Tests\Fixtures\DummyCommandWithDescription                                     
-      handled by Symfony\Component\Messenger\Tests\Fixtures\DummyCommandWithDescriptionHandler               
-                 Used whenever a test needs to show a message handler with a class description.              
-                                                                                                             
-  Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessage                                            
-      handled by Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessageHandler                      
-                                                                                                             
- ----------------------------------------------------------------------------------------------------------- 
+             ----------------------------------------------------------------------------------------------------------- 
+              Symfony\Component\Messenger\Tests\Fixtures\DummyCommand                                                    
+                  handled by Symfony\Component\Messenger\Tests\Fixtures\DummyCommandHandler (when option1=1, option2=2)  
+                                                                                                                         
+              Used whenever a test needs to show a message with a class description.                                     
+              Symfony\Component\Messenger\Tests\Fixtures\DummyCommandWithDescription                                     
+                  handled by Symfony\Component\Messenger\Tests\Fixtures\DummyCommandWithDescriptionHandler               
+                             Used whenever a test needs to show a message handler with a class description.              
+                                                                                                                         
+              Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessage                                            
+                  handled by Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessageHandler                      
+                                                                                                                         
+             ----------------------------------------------------------------------------------------------------------- 
 
-query_bus
----------
+            query_bus
+            ---------
 
- The following messages can be dispatched:
+             The following messages can be dispatched:
 
- --------------------------------------------------------------------------------------- 
-  Symfony\Component\Messenger\Tests\Fixtures\DummyQuery                                  
-      handled by Symfony\Component\Messenger\Tests\Fixtures\DummyQueryHandler            
-                                                                                         
-  Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessage                        
-      handled by Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessageHandler  
-                                                                                         
- --------------------------------------------------------------------------------------- 
+             --------------------------------------------------------------------------------------- 
+              Symfony\Component\Messenger\Tests\Fixtures\DummyQuery                                  
+                  handled by Symfony\Component\Messenger\Tests\Fixtures\DummyQueryHandler            
+                                                                                                     
+              Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessage                        
+                  handled by Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessageHandler  
+                                                                                                     
+             --------------------------------------------------------------------------------------- 
 
 
-TXT
+            TXT
             , $tester->getDisplay(true)
         );
 
@@ -109,25 +109,25 @@ TXT
 
         $this->assertSame(<<<TXT
 
-Messenger
-=========
+            Messenger
+            =========
 
-query_bus
----------
+            query_bus
+            ---------
 
- The following messages can be dispatched:
+             The following messages can be dispatched:
 
- --------------------------------------------------------------------------------------- 
-  Symfony\Component\Messenger\Tests\Fixtures\DummyQuery                                  
-      handled by Symfony\Component\Messenger\Tests\Fixtures\DummyQueryHandler            
-                                                                                         
-  Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessage                        
-      handled by Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessageHandler  
-                                                                                         
- --------------------------------------------------------------------------------------- 
+             --------------------------------------------------------------------------------------- 
+              Symfony\Component\Messenger\Tests\Fixtures\DummyQuery                                  
+                  handled by Symfony\Component\Messenger\Tests\Fixtures\DummyQueryHandler            
+                                                                                                     
+              Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessage                        
+                  handled by Symfony\Component\Messenger\Tests\Fixtures\MultipleBusesMessageHandler  
+                                                                                                     
+             --------------------------------------------------------------------------------------- 
 
 
-TXT
+            TXT
             , $tester->getDisplay(true)
         );
     }
@@ -141,21 +141,21 @@ TXT
 
         $this->assertSame(<<<TXT
 
-Messenger
-=========
+            Messenger
+            =========
 
-command_bus
------------
+            command_bus
+            -----------
 
- [WARNING] No handled message found in bus "command_bus".                                                               
+             [WARNING] No handled message found in bus "command_bus".                                                               
 
-query_bus
----------
+            query_bus
+            ---------
 
- [WARNING] No handled message found in bus "query_bus".                                                                 
+             [WARNING] No handled message found in bus "query_bus".                                                                 
 
 
-TXT
+            TXT
             , $tester->getDisplay(true)
         );
     }
