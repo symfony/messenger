@@ -619,7 +619,7 @@ class WorkerTest extends TestCase
         $unacks = $unacksProperty->getValue($worker);
         $dummyHandler = new DummyBatchHandler();
         $envelopeWithNoAutoAck = $envelope->with(new NoAutoAckStamp(new HandlerDescriptor($dummyHandler)));
-        $unacks->attach($dummyHandler, [$envelopeWithNoAutoAck, 'transport']);
+        $unacks[$dummyHandler] = [$envelopeWithNoAutoAck, 'transport'];
 
         $worker->run();
 
