@@ -35,7 +35,8 @@
         "symfony/serializer": "^6.4|^7.0|^8.0",
         "symfony/service-contracts": "^2.5|^3",
         "symfony/stopwatch": "^6.4|^7.0|^8.0",
-        "symfony/validator": "^6.4|^7.0|^8.0"
+        "symfony/validator": "^6.4|^7.0|^8.0",
+        "symfony/var-dumper": "^6.4|^7.0|^8.0"
     },
     "conflict": {
         "symfony/console": "<7.2",
