@@ -13,6 +13,7 @@ CHANGELOG
  * Add `--exclude-receivers` option to the `messenger:consume command`
  * Allow any `ServiceResetterInterface` implementation in `ResetServicesListener`
  * Add `Symfony\Component\Messenger\Middleware\AddDefaultStampsMiddleware` and `Symfony\Component\Messenger\Message\DefaultStampsProviderInterface`
+ * Add the possibility to configure exchange to exchange bindings in AMQP transport
 
 7.3
 ---
