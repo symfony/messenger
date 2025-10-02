@@ -4,6 +4,7 @@ CHANGELOG
 8.1
 ---
 
+ * Add `forceRetry()` method to `RecoverableExceptionInterface`
  * Add `DecodeFailedMessageMiddleware` to re-decode failed messages using the transport's serializer
  * Receivers no longer delete messages on decode failure; they are routed through the normal retry/failure transport path
  * Add regex support for transport name patterns in the `messenger:consume` command
