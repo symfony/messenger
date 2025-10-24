@@ -14,6 +14,7 @@ namespace Symfony\Component\Messenger\Middleware;
 use Psr\EventDispatcher\EventDispatcherInterface;
 use Psr\Log\LoggerAwareTrait;
 use Symfony\Component\Messenger\Envelope;
+use Symfony\Component\Messenger\Event\MessageSentToTransportsEvent;
 use Symfony\Component\Messenger\Event\SendMessageToTransportsEvent;
 use Symfony\Component\Messenger\Exception\NoSenderForMessageException;
 use Symfony\Component\Messenger\Stamp\ReceivedStamp;
@@ -59,6 +60,10 @@ class SendMessageMiddleware implements MiddlewareInterface
             foreach ($senders as $alias => $sender) {
                 $this->logger?->info('Sending message {class} with {alias} sender using {sender}', $context + ['alias' => $alias, 'sender' => $sender::class]);
                 $envelope = $sender->send($envelope->with(new SentStamp($sender::class, \is_string($alias) ? $alias : null)));
+            }
+
+            if (null !== $this->eventDispatcher && $senders) {
+                $this->eventDispatcher->dispatch(new MessageSentToTransportsEvent($envelope, $senders));
             }
 
             if (!$this->allowNoSenders && !$sender) {
