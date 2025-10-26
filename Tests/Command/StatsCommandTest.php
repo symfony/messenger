@@ -116,4 +116,33 @@ class StatsCommandTest extends TestCase
         $this->assertStringNotContainsString('another_message_countable', $display);
         $this->assertStringNotContainsString('! [NOTE] Unable to get message count for the following transports: "simple".', $display);
     }
+
+    public function testTableOutputGoesToStdout()
+    {
+        $tester = new CommandTester($this->command);
+        $tester->execute([], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringContainsString('Transport', $stdout);
+        $this->assertStringContainsString('message_countable', $stdout);
+
+        $this->assertStringContainsString('[WARNING]', $stderr);
+        $this->assertStringContainsString('[NOTE]', $stderr);
+        $this->assertStringNotContainsString('Transport', $stderr);
+    }
+
+    public function testWarningsGoToStderrWithSpecificTransport()
+    {
+        $tester = new CommandTester($this->command);
+        $tester->execute(['transport_names' => ['message_countable']], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringContainsString('message_countable', $stdout);
+        $this->assertStringNotContainsString('[WARNING]', $stderr);
+        $this->assertStringNotContainsString('Transport', $stderr);
+    }
 }
