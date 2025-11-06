@@ -99,14 +99,14 @@ EOF
         }
 
         match ($format) {
-            'txt' => $this->outputText($io, $outputTable, $uncountableTransports),
+            'txt' => $this->outputText($io, $errorIo, $outputTable, $uncountableTransports),
             'json' => $this->outputJson($io, $outputTable, $uncountableTransports),
         };
 
         return 0;
     }
 
-    private function outputText(SymfonyStyle $io, array $outputTable, array $uncountableTransports): void
+    private function outputText(SymfonyStyle $io, SymfonyStyle $errorIo, array $outputTable, array $uncountableTransports): void
     {
         $io->table(['Transport', 'Count'], $outputTable);
 

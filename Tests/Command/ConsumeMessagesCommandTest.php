@@ -314,16 +314,14 @@ class ConsumeMessagesCommandTest extends TestCase
         $receiver = $this->createMock(ReceiverInterface::class);
         $receiver->expects($this->once())->method('get')->willReturn([$envelope]);
 
-        $receiverLocator = $this->createMock(ContainerInterface::class);
-        $receiverLocator->expects($this->once())->method('has')->with('dummy-receiver')->willReturn(true);
-        $receiverLocator->expects($this->once())->method('get')->with('dummy-receiver')->willReturn($receiver);
+        $receiverLocator = new Container();
+        $receiverLocator->set('dummy-receiver', $receiver);
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects($this->once())->method('dispatch');
 
-        $busLocator = $this->createMock(ContainerInterface::class);
-        $busLocator->expects($this->once())->method('has')->with('dummy-bus')->willReturn(true);
-        $busLocator->expects($this->once())->method('get')->with('dummy-bus')->willReturn($bus);
+        $busLocator = new Container();
+        $busLocator->set('dummy-bus', $bus);
 
         $command = new ConsumeMessagesCommand(new RoutableMessageBus($busLocator), $receiverLocator, new EventDispatcher());
 
@@ -349,16 +347,14 @@ class ConsumeMessagesCommandTest extends TestCase
         $receiver = $this->createMock(ReceiverInterface::class);
         $receiver->expects($this->once())->method('get')->willReturn([$envelope]);
 
-        $receiverLocator = $this->createMock(ContainerInterface::class);
-        $receiverLocator->expects($this->once())->method('has')->with('dummy-receiver')->willReturn(true);
-        $receiverLocator->expects($this->once())->method('get')->with('dummy-receiver')->willReturn($receiver);
+        $receiverLocator = new Container();
+        $receiverLocator->set('dummy-receiver', $receiver);
 
         $bus = $this->createMock(MessageBusInterface::class);
         $bus->expects($this->once())->method('dispatch');
 
-        $busLocator = $this->createMock(ContainerInterface::class);
-        $busLocator->expects($this->once())->method('has')->with('dummy-bus')->willReturn(true);
-        $busLocator->expects($this->once())->method('get')->with('dummy-bus')->willReturn($bus);
+        $busLocator = new Container();
+        $busLocator->set('dummy-bus', $bus);
 
         $command = new ConsumeMessagesCommand(new RoutableMessageBus($busLocator), $receiverLocator, new EventDispatcher());
 
