@@ -66,8 +66,10 @@ abstract class AbstractFailedMessagesCommand extends Command
         return $stamp?->getId();
     }
 
-    protected function displaySingleMessage(Envelope $envelope, SymfonyStyle $io): void
+    protected function displaySingleMessage(Envelope $envelope, SymfonyStyle $io, ?SymfonyStyle $errorIo = null): void
     {
+        $errorIo ??= $io->getErrorStyle();
+
         $io->title('Failed Message Details');
 
         /** @var SentToFailureTransportStamp|null $sentToFailureTransportStamp */
@@ -88,7 +90,7 @@ abstract class AbstractFailedMessagesCommand extends Command
         }
 
         if (null === $sentToFailureTransportStamp) {
-            $io->warning('Message does not appear to have been sent to this transport after failing');
+            $errorIo->warning('Message does not appear to have been sent to this transport after failing');
         } else {
             $failedAt = '';
             $errorMessage = '';
@@ -127,7 +129,7 @@ abstract class AbstractFailedMessagesCommand extends Command
         if ($io->isVeryVerbose()) {
             $io->title('Message:');
             if (null !== $lastMessageDecodingFailedStamp) {
-                $io->error('The message could not be decoded. See below an APPROXIMATIVE representation of the class.');
+                $errorIo->error('The message could not be decoded. See below an APPROXIMATIVE representation of the class.');
             }
             $dump = new Dumper($io, null, $this->createCloner());
             $io->writeln($dump($envelope->getMessage()));
@@ -136,7 +138,7 @@ abstract class AbstractFailedMessagesCommand extends Command
             $io->writeln(null === $flattenException ? '(no data)' : $dump($flattenException));
         } else {
             if (null !== $lastMessageDecodingFailedStamp) {
-                $io->error('The message could not be decoded.');
+                $errorIo->error('The message could not be decoded.');
             }
             $io->writeln(' Re-run command with <info>-vv</info> to see more message & error details.');
         }

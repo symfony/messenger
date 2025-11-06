@@ -23,7 +23,6 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Question\ChoiceQuestion;
 use Symfony\Component\Console\Style\SymfonyStyle;
@@ -136,7 +135,7 @@ EOF
 
     protected function interact(InputInterface $input, OutputInterface $output): void
     {
-        $io = new SymfonyStyle($input, $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output);
+        $io = new SymfonyStyle($input, $output);
 
         if ($input->getOption('all')) {
             return;
@@ -231,19 +230,20 @@ EOF
 
         $stopsWhen[] = 'received a stop signal via the messenger:stop-workers command';
 
-        $io = new SymfonyStyle($input, $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output);
+        $io = new SymfonyStyle($input, $output);
+        $errorIo = $io->getErrorStyle();
         $io->success(\sprintf('Consuming messages from transport%s "%s".', \count($receivers) > 1 ? 's' : '', implode(', ', $receiverNames)));
 
         if ($stopsWhen) {
             $last = array_pop($stopsWhen);
             $stopsWhen = ($stopsWhen ? implode(', ', $stopsWhen).' or ' : '').$last;
-            $io->comment("The worker will automatically exit once it has {$stopsWhen}.");
+            $errorIo->comment("The worker will automatically exit once it has {$stopsWhen}.");
         }
 
-        $io->comment('Quit the worker with CONTROL-C.');
+        $errorIo->comment('Quit the worker with CONTROL-C.');
 
         if (OutputInterface::VERBOSITY_VERBOSE > $output->getVerbosity()) {
-            $io->comment('Re-run the command with a -vv option to see logs about consumed messages.');
+            $errorIo->comment('Re-run the command with a -vv option to see logs about consumed messages.');
         }
 
         $bus = $input->getOption('bus') ? $this->routableBus->getMessageBus($input->getOption('bus')) : $this->routableBus;
