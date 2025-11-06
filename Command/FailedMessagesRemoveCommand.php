@@ -16,7 +16,6 @@ use Symfony\Component\Console\Exception\RuntimeException;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
@@ -55,7 +54,8 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output);
+        $io = new SymfonyStyle($input, $output);
+        $errorIo = $io->getErrorStyle();
 
         $failureTransportName = $input->getOption('transport');
         if (self::DEFAULT_TRANSPORT_OPTION === $failureTransportName) {
@@ -82,15 +82,15 @@ EOF
         }
 
         if ($shouldDeleteAllMessages) {
-            $this->removeAllMessages($receiver, $io, $shouldForce, $shouldDisplayMessages);
+            $this->removeAllMessages($receiver, $io, $errorIo, $shouldForce, $shouldDisplayMessages);
         } else {
-            $this->removeMessagesById($ids, $receiver, $io, $shouldForce, $shouldDisplayMessages);
+            $this->removeMessagesById($ids, $receiver, $io, $errorIo, $shouldForce, $shouldDisplayMessages);
         }
 
         return 0;
     }
 
-    private function removeMessagesById(array $ids, ListableReceiverInterface $receiver, SymfonyStyle $io, bool $shouldForce, bool $shouldDisplayMessages): void
+    private function removeMessagesById(array $ids, ListableReceiverInterface $receiver, SymfonyStyle $io, SymfonyStyle $errorIo, bool $shouldForce, bool $shouldDisplayMessages): void
     {
         foreach ($ids as $id) {
             $this->phpSerializer?->acceptPhpIncompleteClass();
@@ -101,25 +101,25 @@ EOF
             }
 
             if (null === $envelope) {
-                $io->error(\sprintf('The message with id "%s" was not found.', $id));
+                $errorIo->error(\sprintf('The message with id "%s" was not found.', $id));
                 continue;
             }
 
             if ($shouldDisplayMessages) {
-                $this->displaySingleMessage($envelope, $io);
+                $this->displaySingleMessage($envelope, $io, $errorIo);
             }
 
-            if ($shouldForce || $io->confirm('Do you want to permanently remove this message?', false)) {
+            if ($shouldForce || $errorIo->confirm('Do you want to permanently remove this message?', false)) {
                 $receiver->reject($envelope);
 
                 $io->success(\sprintf('Message with id %s removed.', $id));
             } else {
-                $io->note(\sprintf('Message with id %s not removed.', $id));
+                $errorIo->note(\sprintf('Message with id %s not removed.', $id));
             }
         }
     }
 
-    private function removeAllMessages(ListableReceiverInterface $receiver, SymfonyStyle $io, bool $shouldForce, bool $shouldDisplayMessages): void
+    private function removeAllMessages(ListableReceiverInterface $receiver, SymfonyStyle $io, SymfonyStyle $errorIo, bool $shouldForce, bool $shouldDisplayMessages): void
     {
         if (!$shouldForce) {
             if ($receiver instanceof MessageCountAwareInterface) {
@@ -128,7 +128,7 @@ EOF
                 $question = 'Do you want to permanently remove all failed messages?';
             }
 
-            if (!$io->confirm($question, false)) {
+            if (!$errorIo->confirm($question, false)) {
                 return;
             }
         }
@@ -136,13 +136,13 @@ EOF
         $count = 0;
         foreach ($receiver->all() as $envelope) {
             if ($shouldDisplayMessages) {
-                $this->displaySingleMessage($envelope, $io);
+                $this->displaySingleMessage($envelope, $io, $errorIo);
             }
 
             $receiver->reject($envelope);
             ++$count;
         }
 
-        $io->note(\sprintf('%d messages were removed.', $count));
+        $errorIo->note(\sprintf('%d messages were removed.', $count));
     }
 }

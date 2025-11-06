@@ -23,6 +23,7 @@ use Symfony\Component\Messenger\Stamp\RedeliveryStamp;
 use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
+use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
 use Symfony\Component\Messenger\Transport\Receiver\ReceiverInterface;
 
 /**
@@ -465,5 +466,60 @@ EOF
         $suggestions = $tester->complete(['--transport', $anotherFailureReceiverName, ' ']);
 
         $this->assertSame(['2ab50dfa1fbf', '78c2da843723'], $suggestions);
+    }
+
+    public function testTableOutputGoesToStdout()
+    {
+        $envelope = new Envelope(new \stdClass(), [
+            new TransportMessageIdStamp('2ab50dfa1fbf'),
+            new SentToFailureTransportStamp('async'),
+            new RedeliveryStamp(0),
+        ]);
+
+        $receiver = $this->createMock(ListableReceiverInterface::class);
+        $receiver->expects($this->once())->method('all')->with(50)->willReturn([$envelope]);
+
+        $serviceLocator = $this->createMock(ServiceLocator::class);
+        $serviceLocator->method('has')->willReturn(true);
+        $serviceLocator->method('get')->willReturn($receiver);
+
+        $command = new FailedMessagesShowCommand('failure_receiver', $serviceLocator);
+        $tester = new CommandTester($command);
+        $tester->execute([], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringContainsString('2ab50dfa1fbf', $stdout);
+        $this->assertStringContainsString('messenger:failed:show', $stderr);
+        $this->assertStringNotContainsString('2ab50dfa1fbf', $stderr);
+    }
+
+    public function testPendingMessageCountGoesToStdout()
+    {
+        $receiver = new class implements ListableReceiverInterface, MessageCountAwareInterface {
+            public function get(): iterable { return []; }
+            public function ack(Envelope $envelope): void {}
+            public function reject(Envelope $envelope): void {}
+            public function find(mixed $id): ?Envelope { return null; }
+            public function all(int $limit = null): iterable { return []; }
+            public function getMessageCount(): int { return 3; }
+        };
+
+        $serviceLocator = $this->createMock(ServiceLocator::class);
+        $serviceLocator->method('has')->willReturn(true);
+        $serviceLocator->method('get')->willReturn($receiver);
+
+        $command = new FailedMessagesShowCommand('failure_receiver', $serviceLocator);
+        $tester = new CommandTester($command);
+        $tester->execute(['--max' => 5], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringContainsString('There are', $stdout);
+        $this->assertStringContainsString('3', $stdout);
+        $this->assertStringContainsString('messages pending', $stdout);
+        $this->assertStringNotContainsString('messages pending', $stderr);
     }
 }

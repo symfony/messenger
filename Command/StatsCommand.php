@@ -16,7 +16,6 @@ use Symfony\Component\Console\Attribute\AsCommand;
 use Symfony\Component\Console\Command\Command;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
@@ -60,7 +59,8 @@ EOF
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output);
+        $io = new SymfonyStyle($input, $output);
+        $errorIo = $io->getErrorStyle();
 
         $transportNames = $this->transportNames;
         if ($input->getArgument('transport_names')) {
@@ -71,7 +71,7 @@ EOF
         $uncountableTransports = [];
         foreach ($transportNames as $transportName) {
             if (!$this->transportLocator->has($transportName)) {
-                $io->warning(\sprintf('The "%s" transport does not exist.', $transportName));
+                $errorIo->warning(\sprintf('The "%s" transport does not exist.', $transportName));
 
                 continue;
             }
@@ -87,7 +87,7 @@ EOF
         $io->table(['Transport', 'Count'], $outputTable);
 
         if ($uncountableTransports) {
-            $io->note(\sprintf('Unable to get message count for the following transports: "%s".', implode('", "', $uncountableTransports)));
+            $errorIo->note(\sprintf('Unable to get message count for the following transports: "%s".', implode('", "', $uncountableTransports)));
         }
 
         return 0;
