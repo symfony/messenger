@@ -330,6 +330,76 @@ class ConsumeMessagesCommandTest extends TestCase
         yield 'option --bus' => [['--bus', ''], ['messenger.bus.default']];
     }
 
+    public function testSuccessMessageGoesToStdout()
+    {
+        $envelope = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
+
+        $receiver = $this->createMock(ReceiverInterface::class);
+        $receiver->expects($this->once())->method('get')->willReturn([$envelope]);
+
+        $receiverLocator = $this->createMock(ContainerInterface::class);
+        $receiverLocator->expects($this->once())->method('has')->with('dummy-receiver')->willReturn(true);
+        $receiverLocator->expects($this->once())->method('get')->with('dummy-receiver')->willReturn($receiver);
+
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects($this->once())->method('dispatch');
+
+        $busLocator = $this->createMock(ContainerInterface::class);
+        $busLocator->expects($this->once())->method('has')->with('dummy-bus')->willReturn(true);
+        $busLocator->expects($this->once())->method('get')->with('dummy-bus')->willReturn($bus);
+
+        $command = new ConsumeMessagesCommand(new RoutableMessageBus($busLocator), $receiverLocator, new EventDispatcher());
+
+        $application = new Application();
+        $application->add($command);
+        $tester = new CommandTester($application->get('messenger:consume'));
+        $tester->execute([
+            'receivers' => ['dummy-receiver'],
+            '--limit' => 1,
+        ], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringContainsString('Consuming messages from transport', $stdout);
+        $this->assertStringNotContainsString('Consuming messages from transport', $stderr);
+    }
+
+    public function testCommentsGoToStderr()
+    {
+        $envelope = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
+
+        $receiver = $this->createMock(ReceiverInterface::class);
+        $receiver->expects($this->once())->method('get')->willReturn([$envelope]);
+
+        $receiverLocator = $this->createMock(ContainerInterface::class);
+        $receiverLocator->expects($this->once())->method('has')->with('dummy-receiver')->willReturn(true);
+        $receiverLocator->expects($this->once())->method('get')->with('dummy-receiver')->willReturn($receiver);
+
+        $bus = $this->createMock(MessageBusInterface::class);
+        $bus->expects($this->once())->method('dispatch');
+
+        $busLocator = $this->createMock(ContainerInterface::class);
+        $busLocator->expects($this->once())->method('has')->with('dummy-bus')->willReturn(true);
+        $busLocator->expects($this->once())->method('get')->with('dummy-bus')->willReturn($bus);
+
+        $command = new ConsumeMessagesCommand(new RoutableMessageBus($busLocator), $receiverLocator, new EventDispatcher());
+
+        $application = new Application();
+        $application->add($command);
+        $tester = new CommandTester($application->get('messenger:consume'));
+        $tester->execute([
+            'receivers' => ['dummy-receiver'],
+            '--limit' => 1,
+        ], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringNotContainsString('Quit the worker with CONTROL-C', $stdout);
+        $this->assertStringContainsString('Quit the worker with CONTROL-C', $stderr);
+    }
+
     public function testRunWithExcludeReceiversOption()
     {
         $envelope1 = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);

@@ -398,4 +398,73 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $this->assertStringContainsString('Failed Message Details', $tester->getDisplay());
         $this->assertStringContainsString('4 messages were removed.', $tester->getDisplay());
     }
+
+    public function testSuccessMessageGoesToStdout()
+    {
+        $globalFailureReceiverName = 'failure_receiver';
+        $receiver = $this->createMock(ListableReceiverInterface::class);
+
+        $envelope = new Envelope(new \stdClass(), [new TransportMessageIdStamp('some_id')]);
+        $receiver->method('find')->with('some_id')->willReturn($envelope);
+
+        $serviceLocator = $this->createMock(ServiceLocator::class);
+        $serviceLocator->method('has')->willReturn(true);
+        $serviceLocator->method('get')->willReturn($receiver);
+
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, $serviceLocator);
+        $tester = new CommandTester($command);
+        $tester->execute(['id' => ['some_id'], '--force' => true], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringContainsString('Message with id some_id removed', $stdout);
+        $this->assertStringNotContainsString('Message with id some_id removed', $stderr);
+    }
+
+    public function testErrorMessageGoesToStderr()
+    {
+        $globalFailureReceiverName = 'failure_receiver';
+        $receiver = $this->createMock(ListableReceiverInterface::class);
+
+        $receiver->method('find')->with('not_found')->willReturn(null);
+
+        $serviceLocator = $this->createMock(ServiceLocator::class);
+        $serviceLocator->method('has')->willReturn(true);
+        $serviceLocator->method('get')->willReturn($receiver);
+
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, $serviceLocator);
+        $tester = new CommandTester($command);
+        $tester->execute(['id' => ['not_found']], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringNotContainsString('[ERROR]', $stdout);
+        $this->assertStringContainsString('The message with id "not_found" was not found', $stderr);
+    }
+
+    public function testNoteMessageGoesToStderr()
+    {
+        $globalFailureReceiverName = 'failure_receiver';
+        $receiver = $this->createMock(ListableReceiverInterface::class);
+
+        $envelope = new Envelope(new \stdClass(), [new TransportMessageIdStamp('some_id')]);
+        $receiver->method('find')->with('some_id')->willReturn($envelope);
+
+        $serviceLocator = $this->createMock(ServiceLocator::class);
+        $serviceLocator->method('has')->willReturn(true);
+        $serviceLocator->method('get')->willReturn($receiver);
+
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, $serviceLocator);
+        $tester = new CommandTester($command);
+        $tester->setInputs(['no']);
+        $tester->execute(['id' => ['some_id']], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringNotContainsString('[NOTE]', $stdout);
+        $this->assertStringContainsString('Message with id some_id not removed', $stderr);
+    }
 }

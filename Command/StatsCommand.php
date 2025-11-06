@@ -19,7 +19,6 @@ use Symfony\Component\Console\Completion\CompletionSuggestions;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
-use Symfony\Component\Console\Output\ConsoleOutputInterface;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
 use Symfony\Component\Messenger\Exception\InvalidArgumentException;
@@ -62,7 +61,8 @@ class StatsCommand extends Command
 
     protected function execute(InputInterface $input, OutputInterface $output): int
     {
-        $io = new SymfonyStyle($input, $output instanceof ConsoleOutputInterface ? $output->getErrorOutput() : $output);
+        $io = new SymfonyStyle($input, $output);
+        $errorIo = $io->getErrorStyle();
 
         $format = $input->getOption('format');
         if ('text' === $format) {
@@ -84,7 +84,7 @@ class StatsCommand extends Command
         foreach ($transportNames as $transportName) {
             if (!$this->transportLocator->has($transportName)) {
                 if ($this->formatSupportsWarnings($format)) {
-                    $io->warning(\sprintf('The "%s" transport does not exist.', $transportName));
+                    $errorIo->warning(\sprintf('The "%s" transport does not exist.', $transportName));
                 }
 
                 continue;
@@ -111,7 +111,7 @@ class StatsCommand extends Command
         $io->table(['Transport', 'Count'], $outputTable);
 
         if ($uncountableTransports) {
-            $io->note(\sprintf('Unable to get message count for the following transports: "%s".', implode('", "', $uncountableTransports)));
+            $errorIo->note(\sprintf('Unable to get message count for the following transports: "%s".', implode('", "', $uncountableTransports)));
         }
     }
 

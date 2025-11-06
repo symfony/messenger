@@ -22,6 +22,7 @@ use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
 use Symfony\Component\Messenger\Stamp\TransportMessageIdStamp;
 use Symfony\Component\Messenger\Transport\Receiver\ListableReceiverInterface;
+use Symfony\Component\Messenger\Transport\Receiver\MessageCountAwareInterface;
 
 class FailedMessagesRetryCommandTest extends TestCase
 {
@@ -223,6 +224,117 @@ class FailedMessagesRetryCommandTest extends TestCase
         $suggestions = $tester->complete(['--transport', $anotherFailureReceiverName, ' ']);
 
         $this->assertSame(['2ab50dfa1fbf', '78c2da843723'], $suggestions);
+    }
+
+   public function testSuccessMessageGoesToStdout()
+    {
+        $envelope = new Envelope(new \stdClass(), [new TransportMessageIdStamp('some_id')]);
+        $receiver = $this->createMock(ListableReceiverInterface::class);
+        $receiver->method('find')->with('some_id')->willReturn($envelope);
+
+        $serviceLocator = $this->createMock(ServiceLocator::class);
+        $serviceLocator->method('has')->willReturn(true);
+        $serviceLocator->method('get')->willReturn($receiver);
+
+        $command = new FailedMessagesRetryCommand(
+            'failure_receiver',
+            $serviceLocator,
+            $this->createMock(MessageBusInterface::class),
+            new EventDispatcher()
+        );
+
+        $tester = new CommandTester($command);
+        $tester->setInputs(['retry']);
+        $tester->execute(['id' => ['some_id']], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringContainsString('All done!', $stdout);
+        $this->assertStringNotContainsString('All done!', $stderr);
+    }
+
+    public function testCommentsGoToStderr()
+    {
+        $envelope = new Envelope(new \stdClass(), [new TransportMessageIdStamp('some_id')]);
+        $receiver = $this->createMock(ListableReceiverInterface::class);
+        $receiver->method('find')->with('some_id')->willReturn($envelope);
+
+        $serviceLocator = $this->createMock(ServiceLocator::class);
+        $serviceLocator->method('has')->willReturn(true);
+        $serviceLocator->method('get')->willReturn($receiver);
+
+        $command = new FailedMessagesRetryCommand(
+            'failure_receiver',
+            $serviceLocator,
+            $this->createMock(MessageBusInterface::class),
+            new EventDispatcher()
+        );
+
+        $tester = new CommandTester($command);
+        $tester->setInputs(['retry']);
+        $tester->execute(['id' => ['some_id']], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringContainsString('Quit this command with CONTROL-C', $stderr);
+        $this->assertStringNotContainsString('Quit this command with CONTROL-C', $stdout);
+    }
+
+    public function testPendingMessageCountGoesToStdout()
+    {
+        $receiver = new class implements ListableReceiverInterface, MessageCountAwareInterface {
+            public function get(): iterable
+            {
+                return [];
+            }
+
+            public function ack(Envelope $envelope): void
+            {
+            }
+
+            public function reject(Envelope $envelope): void
+            {
+            }
+
+            public function find(mixed $id): ?Envelope
+            {
+                return null;
+            }
+
+            public function all(?int $limit = null): iterable
+            {
+                return [];
+            }
+
+            public function getMessageCount(): int
+            {
+                return 5;
+            }
+        };
+
+        $serviceLocator = $this->createMock(ServiceLocator::class);
+        $serviceLocator->method('has')->willReturn(true);
+        $serviceLocator->method('get')->willReturn($receiver);
+
+        $command = new FailedMessagesRetryCommand(
+            'failure_receiver',
+            $serviceLocator,
+            $this->createMock(MessageBusInterface::class),
+            new EventDispatcher()
+        );
+
+        $tester = new CommandTester($command);
+        $tester->execute(['--force' => true], ['capture_stderr_separately' => true]);
+
+        $stdout = $tester->getDisplay();
+        $stderr = $tester->getErrorOutput();
+
+        $this->assertStringContainsString('There are', $stdout);
+        $this->assertStringContainsString('5', $stdout);
+        $this->assertStringContainsString('messages pending', $stdout);
+        $this->assertStringNotContainsString('messages pending', $stderr);
     }
 
     public function testSkipRunWithServiceLocator()
