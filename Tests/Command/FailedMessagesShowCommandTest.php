@@ -498,12 +498,33 @@ EOF
     public function testPendingMessageCountGoesToStdout()
     {
         $receiver = new class implements ListableReceiverInterface, MessageCountAwareInterface {
-            public function get(): iterable { return []; }
-            public function ack(Envelope $envelope): void {}
-            public function reject(Envelope $envelope): void {}
-            public function find(mixed $id): ?Envelope { return null; }
-            public function all(int $limit = null): iterable { return []; }
-            public function getMessageCount(): int { return 3; }
+            public function get(): iterable
+            {
+                return [];
+            }
+
+            public function ack(Envelope $envelope): void
+            {
+            }
+
+            public function reject(Envelope $envelope): void
+            {
+            }
+
+            public function find(mixed $id): ?Envelope
+            {
+                return null;
+            }
+
+            public function all(?int $limit = null): iterable
+            {
+                return [];
+            }
+
+            public function getMessageCount(): int
+            {
+                return 3;
+            }
         };
 
         $serviceLocator = $this->createMock(ServiceLocator::class);
