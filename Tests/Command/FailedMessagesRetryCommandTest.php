@@ -226,7 +226,7 @@ class FailedMessagesRetryCommandTest extends TestCase
         $this->assertSame(['2ab50dfa1fbf', '78c2da843723'], $suggestions);
     }
 
-   public function testSuccessMessageGoesToStdout()
+    public function testSuccessMessageGoesToStdout()
     {
         $envelope = new Envelope(new \stdClass(), [new TransportMessageIdStamp('some_id')]);
         $receiver = $this->createMock(ListableReceiverInterface::class);
