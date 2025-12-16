@@ -16,6 +16,7 @@ use PHPUnit\Framework\Constraint\Constraint;
 use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
+use Symfony\Component\Messenger\Stamp\DeduplicateStamp;
 use Symfony\Component\Messenger\Stamp\NonSendableStampInterface;
 use Symfony\Component\Messenger\Stamp\SerializedMessageStamp;
 use Symfony\Component\Messenger\Stamp\SerializerStamp;
@@ -44,6 +45,7 @@ class SerializerTest extends TestCase
         $envelope = (new Envelope(new DummyMessage('Hello')))
             ->with(new SerializerStamp([ObjectNormalizer::GROUPS => ['foo']]))
             ->with(new ValidationStamp(['foo', 'bar']))
+            ->with(new DeduplicateStamp('someKey', 42, true))
             ->with(new SerializedMessageStamp('{"message":"Hello"}'))
         ;
 
