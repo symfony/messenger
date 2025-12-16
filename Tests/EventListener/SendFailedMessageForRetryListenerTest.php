@@ -176,7 +176,7 @@ class SendFailedMessageForRetryListenerTest extends TestCase
         $envelope = new Envelope(new \stdClass());
         $exception = new HandlerFailedException(
             $envelope,
-            array_map(fn (int $retry) => new RecoverableMessageHandlingException('retry', retryDelay: $retry), $retries)
+            array_map(static fn (int $retry) => new RecoverableMessageHandlingException('retry', retryDelay: $retry), $retries)
         );
         $event = new WorkerMessageFailedEvent($envelope, 'my_receiver', $exception);
 

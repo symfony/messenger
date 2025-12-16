@@ -37,7 +37,7 @@ class StatsCommandTest extends TestCase
         $serviceLocator = $this->createMock(ServiceLocator::class);
         $serviceLocator
             ->method('get')
-            ->willReturnCallback(function (string $transportName) use ($messageCountableTransport, $simpleTransport) {
+            ->willReturnCallback(static function (string $transportName) use ($messageCountableTransport, $simpleTransport) {
                 if (\in_array($transportName, ['message_countable', 'another_message_countable'], true)) {
                     return $messageCountableTransport;
                 }
@@ -46,7 +46,7 @@ class StatsCommandTest extends TestCase
             });
         $serviceLocator
             ->method('has')
-            ->willReturnCallback(fn (string $transportName) => \in_array($transportName, ['message_countable', 'simple', 'another_message_countable'], true))
+            ->willReturnCallback(static fn (string $transportName) => \in_array($transportName, ['message_countable', 'simple', 'another_message_countable'], true))
         ;
 
         $this->command = new StatsCommand($serviceLocator, [
