@@ -174,7 +174,6 @@ class MessengerPass implements CompilerPassInterface
             $signingSerializerDefinition = $container->getDefinition('messenger.signing_serializer');
             $messageToSerializersMapping = $signingSerializerDefinition->getArgument(2);
 
-            $signedMessageTypes = array_intersect_key($signedMessageTypes, $messageToSerializersMapping);
             $signingSerializerDefinition->replaceArgument(2, array_keys($signedMessageTypes));
 
             // because transports accept any message types - not only listed ones - we have to decorate all serializers regardless of message signing

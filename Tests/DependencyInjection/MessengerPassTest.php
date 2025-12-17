@@ -839,6 +839,30 @@ class MessengerPassTest extends TestCase
         $this->assertSame(['messenger.default_serializer', null, 0], $child->getDecoratedService());
     }
 
+    public function testAllSignedMessagesAreMapped()
+    {
+        $container = $this->getContainerBuilder('message_bus');
+
+        $container
+            ->register(DummyHandler::class)
+            ->addTag('messenger.message_handler', ['sign' => true])
+        ;
+
+        $container
+            ->register(DummyCommandHandler::class)
+            ->addTag('messenger.message_handler', ['sign' => true])
+        ;
+
+        $container->register('messenger.signing_serializer')
+            ->setArguments([null, null, [DummyMessage::class => ['messenger.default_serializer']]])
+        ;
+
+        (new ResolveClassPass())->process($container);
+        (new MessengerPass())->process($container);
+
+        $this->assertSame([DummyMessage::class, DummyCommand::class], $container->getDefinition('messenger.signing_serializer')->getArgument(2));
+    }
+
     public function testDecoratesAllSerializersFromMappingRegardlessOfSignedTypes()
     {
         $container = $this->getContainerBuilder('message_bus');
