@@ -16,7 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Symfony\Component\Messenger\Handler\HandlerDescriptor;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyCommandHandler;
 
-class HandleDescriptorTest extends TestCase
+class HandlerDescriptorTest extends TestCase
 {
     #[DataProvider('provideHandlers')]
     public function testDescriptorNames(callable $handler, ?string $expectedHandlerString)
@@ -42,7 +42,7 @@ class HandleDescriptorTest extends TestCase
             public function __invoke()
             {
             }
-        }, 'class@anonymous%sHandleDescriptorTest.php%s::__invoke'];
+        }, 'class@anonymous%sHandlerDescriptorTest.php%s::__invoke'];
     }
 
     public function testGetOptions()
