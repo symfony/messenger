@@ -19,7 +19,6 @@ use Symfony\Component\Console\Exception\InvalidOptionException;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
 use Symfony\Component\DependencyInjection\Container;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetter;
@@ -253,9 +252,9 @@ class ConsumeMessagesCommandTest extends TestCase
         $envelope1 = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
         $envelope2 = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
 
-        $receiver1 = $this->createMock(ReceiverInterface::class);
+        $receiver1 = $this->createStub(ReceiverInterface::class);
         $receiver1->method('get')->willReturn([$envelope1]);
-        $receiver2 = $this->createMock(ReceiverInterface::class);
+        $receiver2 = $this->createStub(ReceiverInterface::class);
         $receiver2->method('get')->willReturn([$envelope2]);
 
         $receiverLocator = new Container();

@@ -625,8 +625,6 @@ class WorkerTest extends TestCase
 
         $receiver = new DummyReceiver([[new Envelope($apiMessage)]]);
 
-        $bus = $this->createMock(MessageBusInterface::class);
-
         $dispatcher = new EventDispatcher();
         $dispatcher->addSubscriber(new ResetMemoryUsageListener());
         $before = 0;
@@ -649,7 +647,7 @@ class WorkerTest extends TestCase
             ++$i;
         }, \PHP_INT_MIN);
 
-        $worker = new Worker(['transport' => $receiver], $bus, $dispatcher);
+        $worker = new Worker(['transport' => $receiver], new MessageBus(), $dispatcher);
 
         gc_collect_cycles();
         $before = gc_status()['runs'];
@@ -665,8 +663,6 @@ class WorkerTest extends TestCase
 
         $receiver = new DummyReceiver([[new Envelope($apiMessage)]]);
 
-        $bus = $this->createMock(MessageBusInterface::class);
-
         $dispatcher = new EventDispatcher();
         $dispatcher->addSubscriber(new ResetMemoryUsageListener());
         $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
@@ -678,7 +674,7 @@ class WorkerTest extends TestCase
 
         $before = memory_get_peak_usage();
 
-        $worker = new Worker(['transport' => $receiver], $bus, $dispatcher);
+        $worker = new Worker(['transport' => $receiver], new MessageBus(), $dispatcher);
         $worker->run();
 
         // This should be roughly 4 MB smaller than $before.
