@@ -13,6 +13,7 @@ namespace Symfony\Component\Messenger\Tests\Middleware;
 
 use Psr\Container\ContainerInterface;
 use Psr\EventDispatcher\EventDispatcherInterface;
+use Symfony\Component\EventDispatcher\EventDispatcher;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Event\SendMessageToTransportsEvent;
 use Symfony\Component\Messenger\Exception\NoSenderForMessageException;
@@ -198,14 +199,12 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
     {
         $envelope = new Envelope(new DummyMessage('original envelope'));
 
-        $dispatcher = $this->createMock(EventDispatcherInterface::class);
-
         $sendersLocator = $this->createSendersLocator([DummyMessage::class => []], []);
 
         $this->expectException(NoSenderForMessageException::class);
         $this->expectExceptionMessage('No sender for message "Symfony\Component\Messenger\Tests\Fixtures\DummyMessage"');
 
-        $middleware = new SendMessageMiddleware($sendersLocator, $dispatcher, false);
+        $middleware = new SendMessageMiddleware($sendersLocator, new EventDispatcher(), false);
         $middleware->handle($envelope, $this->getStackMock(false));
     }
 

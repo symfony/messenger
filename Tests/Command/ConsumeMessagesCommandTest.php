@@ -18,14 +18,15 @@ use Symfony\Component\Console\Application;
 use Symfony\Component\Console\Exception\InvalidOptionException;
 use Symfony\Component\Console\Tester\CommandCompletionTester;
 use Symfony\Component\Console\Tester\CommandTester;
+use Symfony\Component\DependencyInjection\Container;
 use Symfony\Component\DependencyInjection\ContainerInterface;
 use Symfony\Component\DependencyInjection\ServiceLocator;
 use Symfony\Component\EventDispatcher\EventDispatcher;
-use Symfony\Component\EventDispatcher\EventDispatcherInterface;
 use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetter;
 use Symfony\Component\Messenger\Command\ConsumeMessagesCommand;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\EventListener\ResetServicesListener;
+use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Messenger\RoutableMessageBus;
 use Symfony\Component\Messenger\Stamp\BusNameStamp;
@@ -36,7 +37,7 @@ class ConsumeMessagesCommandTest extends TestCase
 {
     public function testConfigurationWithDefaultReceiver()
     {
-        $command = new ConsumeMessagesCommand($this->createMock(RoutableMessageBus::class), $this->createMock(ServiceLocator::class), $this->createMock(EventDispatcherInterface::class), null, ['amqp']);
+        $command = new ConsumeMessagesCommand(new RoutableMessageBus(new Container()), new ServiceLocator([]), new EventDispatcher(), null, ['amqp']);
         $inputArgument = $command->getDefinition()->getArgument('receivers');
         $this->assertFalse($inputArgument->isRequired());
         $this->assertSame(['amqp'], $inputArgument->getDefault());
@@ -189,18 +190,15 @@ class ConsumeMessagesCommandTest extends TestCase
     {
         $envelope = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
 
-        $receiver = $this->createMock(ReceiverInterface::class);
+        $receiver = $this->createStub(ReceiverInterface::class);
         $receiver->method('get')->willReturn([$envelope]);
 
         $receiverLocator = $this->createMock(ContainerInterface::class);
         $receiverLocator->method('has')->with('dummy-receiver')->willReturn(true);
         $receiverLocator->method('get')->with('dummy-receiver')->willReturn($receiver);
 
-        $bus = $this->createMock(MessageBusInterface::class);
-
-        $busLocator = $this->createMock(ContainerInterface::class);
-        $busLocator->method('has')->with('dummy-bus')->willReturn(true);
-        $busLocator->method('get')->with('dummy-bus')->willReturn($bus);
+        $busLocator = new Container();
+        $busLocator->set('dummy-bus', new MessageBus());
 
         $command = new ConsumeMessagesCommand(new RoutableMessageBus($busLocator), $receiverLocator, new EventDispatcher());
 
@@ -220,14 +218,14 @@ class ConsumeMessagesCommandTest extends TestCase
     {
         $envelope = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
 
-        $receiver = $this->createMock(ReceiverInterface::class);
+        $receiver = $this->createStub(ReceiverInterface::class);
         $receiver->method('get')->willReturn([$envelope]);
 
         $receiverLocator = $this->createMock(ContainerInterface::class);
         $receiverLocator->method('has')->with('dummy-receiver')->willReturn(true);
         $receiverLocator->method('get')->with('dummy-receiver')->willReturn($receiver);
 
-        $bus = $this->createMock(MessageBusInterface::class);
+        $bus = $this->createStub(MessageBusInterface::class);
 
         $busLocator = $this->createMock(ContainerInterface::class);
         $busLocator->method('has')->with('dummy-bus')->willReturn(true);
@@ -265,9 +263,7 @@ class ConsumeMessagesCommandTest extends TestCase
      */
     public function testComplete(array $input, array $expectedSuggestions)
     {
-        $bus = $this->createMock(RoutableMessageBus::class);
-        $receiverLocator = $this->createMock(ContainerInterface::class);
-        $command = new ConsumeMessagesCommand($bus, $receiverLocator, new EventDispatcher(), null, ['async', 'async_high', 'failed'], null, ['messenger.bus.default']);
+        $command = new ConsumeMessagesCommand(new RoutableMessageBus(new Container()), new Container(), new EventDispatcher(), null, ['async', 'async_high', 'failed'], null, ['messenger.bus.default']);
         $tester = new CommandCompletionTester($command);
         $suggestions = $tester->complete($input);
         $this->assertSame($expectedSuggestions, $suggestions);

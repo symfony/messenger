@@ -35,8 +35,8 @@ class StopWorkersCommandTest extends TestCase
 
     public function testSuccessMessageGoesToStdout()
     {
-        $cachePool = $this->createMock(CacheItemPoolInterface::class);
-        $cacheItem = $this->createMock(CacheItemInterface::class);
+        $cachePool = $this->createStub(CacheItemPoolInterface::class);
+        $cacheItem = $this->createStub(CacheItemInterface::class);
         $cacheItem->method('set');
         $cachePool->method('getItem')->willReturn($cacheItem);
         $cachePool->method('save');
