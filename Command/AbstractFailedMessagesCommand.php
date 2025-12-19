@@ -175,7 +175,7 @@ abstract class AbstractFailedMessagesCommand extends Command
         }
 
         $cloner = new VarCloner();
-        $cloner->addCasters([FlattenException::class => function (FlattenException $flattenException, array $a, Stub $stub): array {
+        $cloner->addCasters([FlattenException::class => static function (FlattenException $flattenException, array $a, Stub $stub): array {
             $stub->class = $flattenException->getClass();
 
             return [
