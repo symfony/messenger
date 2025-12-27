@@ -66,7 +66,7 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
 
         $this
             ->setDefinition([
-                new InputArgument('receivers', InputArgument::IS_ARRAY, 'Names of the receivers/transports to consume in order of priority', $defaultReceiverName ? [$defaultReceiverName] : []),
+                new InputArgument('receivers', InputArgument::IS_ARRAY, 'Names or regular expression patterns of the receivers/transports to consume in order of priority', $defaultReceiverName ? [$defaultReceiverName] : []),
                 new InputOption('limit', 'l', InputOption::VALUE_REQUIRED, 'Limit the number of received messages'),
                 new InputOption('failure-limit', 'f', InputOption::VALUE_REQUIRED, 'The number of failed messages the worker can consume'),
                 new InputOption('memory-limit', 'm', InputOption::VALUE_REQUIRED, 'The memory limit the worker can consume'),
@@ -84,9 +84,15 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
 
                     <info>php %command.full_name% <receiver-name></info>
 
-                To receive from multiple transports, pass each name:
+                You can specify a single receiver name or use a regular expression to match
+                multiple receivers. When a regular expression matches multiple transport names,
+                the order of the receivers will match their order in the configuration:
 
-                    <info>php %command.full_name% receiver1 receiver2</info>
+                    <info>php %command.full_name% "receiver1|receiver2"</info>
+
+                To get a different order, pass each name or regular expression as a separate argument:
+
+                    <info>php %command.full_name% receiver2 receiver1</info>
 
                 Use the <info>--limit</info> option to limit the number of messages received:
 
@@ -183,7 +189,16 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
 
         $receivers = [];
         $rateLimiters = [];
-        $receiverNames = $input->getOption('all') ? $this->receiverNames : $input->getArgument('receivers');
+        if ($input->getOption('all')) {
+            $receiverNames = $this->receiverNames;
+        } else {
+            $receiverNames = [];
+            foreach ($input->getArgument('receivers') as $receiver) {
+                $receiverNames = array_merge($receiverNames, preg_grep(\sprintf('{^%s$}', $receiver), $this->receiverNames));
+            }
+            $receiverNames = $receiverNames ?: $input->getArgument('receivers');
+            $receiverNames = array_unique($receiverNames);
+        }
 
         if ($input->getOption('all') && $excludedTransports = $input->getOption('exclude-receivers')) {
             $receiverNames = array_diff($receiverNames, $excludedTransports);

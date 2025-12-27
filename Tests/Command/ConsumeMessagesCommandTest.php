@@ -524,4 +524,52 @@ class ConsumeMessagesCommandTest extends TestCase
             '--exclude-receivers' => ['dummy-receiver1', 'dummy-receiver2'],
         ]);
     }
+
+    #[DataProvider('provideReceiversForCaseInsensitiveMatching')]
+    public function testCaseInsensitiveReceiverMatching(array $receiverNames, array $receivers, array $expectedReceivers)
+    {
+        $envelope = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
+
+        $receiver = $this->createStub(ReceiverInterface::class);
+        $receiver->method('get')->willReturn([$envelope]);
+
+        $receiverLocator = new Container();
+        foreach ($receiverNames as $receiverName) {
+            $receiverLocator->set($receiverName, $receiver);
+        }
+
+        $bus = $this->createStub(MessageBusInterface::class);
+
+        $busLocator = new Container();
+        $busLocator->set('dummy-bus', $bus);
+
+        $command = new ConsumeMessagesCommand(new RoutableMessageBus($busLocator), $receiverLocator, new EventDispatcher(), receiverNames: $receiverNames);
+
+        $application = new Application();
+        $application->addCommand($command);
+        $tester = new CommandTester($application->get('messenger:consume'));
+        $tester->execute([
+            'receivers' => $receivers,
+            '--limit' => 1,
+        ]);
+
+        $tester->assertCommandIsSuccessful();
+        $this->assertStringContainsString(
+            \sprintf(
+                '[OK] Consuming messages from %s "%s"',
+                1 === \count($expectedReceivers) ? 'transport' : 'transports',
+                implode(', ', $expectedReceivers)
+            ),
+            $tester->getDisplay()
+        );
+    }
+
+    public static function provideReceiversForCaseInsensitiveMatching(): \Traversable
+    {
+        yield [['one', 'one_second', 'second', 'pone'], ['one.*'], ['one', 'one_second']];
+        yield [['one', 'one_second', 'second'], ['one'], ['one']];
+        yield [['one', 'one_second', 'second', 'SECOND'], ['(?i)second'], ['second', 'SECOND']];
+        yield [['one', 'one_second', 'second', 'SECOND', 'ssecond'], ['one', 'one.*', 'second.*'], ['one', 'one_second', 'second']];
+        yield [['pone'], ['.*one'], ['pone']];
+    }
 }
