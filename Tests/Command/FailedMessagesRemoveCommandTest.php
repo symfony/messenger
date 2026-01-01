@@ -30,13 +30,10 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $globalFailureReceiverName = 'failure_receiver';
         $receiver = $this->createMock(ListableReceiverInterface::class);
         $receiver->expects($this->once())->method('find')->with(20)->willReturn(new Envelope(new \stdClass()));
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($globalFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($globalFailureReceiverName)->willReturn($receiver);
 
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            $serviceLocator
+            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -51,13 +48,10 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $globalFailureReceiverName = 'failure_receiver';
         $receiver = $this->createMock(ListableReceiverInterface::class);
         $receiver->expects($this->once())->method('find')->with(20)->willReturn(new Envelope(new \stdClass()));
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($globalFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($globalFailureReceiverName)->willReturn($receiver);
 
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            $serviceLocator
+            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -72,13 +66,10 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $failureReveiverName = 'specific_failure_receiver';
         $receiver = $this->createMock(ListableReceiverInterface::class);
         $receiver->expects($this->once())->method('find')->with(20)->willReturn(new Envelope(new \stdClass()));
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($failureReveiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($failureReveiverName)->willReturn($receiver);
 
         $command = new FailedMessagesRemoveCommand(
             $failureReveiverName,
-            $serviceLocator
+            new ServiceLocator([$failureReveiverName => fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -92,13 +83,10 @@ class FailedMessagesRemoveCommandTest extends TestCase
     {
         $failureReceiverName = 'failure_receiver';
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($failureReceiverName)->willReturn(false);
-
         $this->expectException(InvalidArgumentException::class);
         $command = new FailedMessagesRemoveCommand(
             $failureReceiverName,
-            $serviceLocator
+            new ServiceLocator([])
         );
 
         $tester = new CommandTester($command);
@@ -128,13 +116,9 @@ class FailedMessagesRemoveCommandTest extends TestCase
             })
         ;
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($globalFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($globalFailureReceiverName)->willReturn($receiver);
-
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            $serviceLocator
+            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -165,13 +149,9 @@ class FailedMessagesRemoveCommandTest extends TestCase
             })
         ;
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($globalFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($globalFailureReceiverName)->willReturn($receiver);
-
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            $serviceLocator
+            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -233,17 +213,14 @@ class FailedMessagesRemoveCommandTest extends TestCase
     {
         $globalFailureReceiverName = 'failure_receiver';
 
-        $receiver = $this->createMock(ListableReceiverInterface::class);
-
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('getProvidedServices')->willReturn([
-            'global_receiver' => $receiver,
-            $globalFailureReceiverName => $receiver,
-        ]);
+        $receiver = $this->createStub(ListableReceiverInterface::class);
 
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            $serviceLocator
+            new ServiceLocator([
+                'global_receiver' => fn () => $receiver,
+                $globalFailureReceiverName => fn () => $receiver,
+            ])
         );
         $tester = new CommandCompletionTester($command);
 
@@ -261,13 +238,9 @@ class FailedMessagesRemoveCommandTest extends TestCase
             Envelope::wrap(new \stdClass(), [new TransportMessageIdStamp('78c2da843723')]),
         ]);
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($globalFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($globalFailureReceiverName)->willReturn($receiver);
-
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            $serviceLocator
+            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
         );
         $tester = new CommandCompletionTester($command);
 
@@ -287,13 +260,9 @@ class FailedMessagesRemoveCommandTest extends TestCase
             Envelope::wrap(new \stdClass(), [new TransportMessageIdStamp('78c2da843723')]),
         ]);
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($anotherFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($anotherFailureReceiverName)->willReturn($receiver);
-
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            $serviceLocator
+            new ServiceLocator([$anotherFailureReceiverName => fn () => $receiver])
         );
 
         $tester = new CommandCompletionTester($command);
@@ -307,11 +276,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
     {
         $globalFailureReceiverName = 'failure_receiver';
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($globalFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($globalFailureReceiverName)->willReturn($this->createMock(ListableReceiverInterface::class));
-
-        $command = new FailedMessagesRemoveCommand('failure_receiver', $serviceLocator);
+        $command = new FailedMessagesRemoveCommand('failure_receiver', new ServiceLocator([$globalFailureReceiverName => fn () => $this->createStub(ListableReceiverInterface::class)]));
         $tester = new CommandTester($command);
 
         $this->expectException(RuntimeException::class);
@@ -323,12 +288,9 @@ class FailedMessagesRemoveCommandTest extends TestCase
     {
         $globalFailureReceiverName = 'failure_receiver';
 
-        $receiver = $this->createMock(ListableReceiverInterface::class);
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($globalFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($globalFailureReceiverName)->willReturn($receiver);
+        $receiver = $this->createStub(ListableReceiverInterface::class);
 
-        $command = new FailedMessagesRemoveCommand('failure_receiver', $serviceLocator);
+        $command = new FailedMessagesRemoveCommand('failure_receiver', new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
         $tester = new CommandTester($command);
 
         $tester->execute(['--all' => true]);
@@ -344,11 +306,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $receiver = $this->createMock(DoctrineReceiver::class);
         $receiver->expects($this->once())->method('getMessageCount')->willReturn(2);
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($globalFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($globalFailureReceiverName)->willReturn($receiver);
-
-        $command = new FailedMessagesRemoveCommand('failure_receiver', $serviceLocator);
+        $command = new FailedMessagesRemoveCommand('failure_receiver', new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
         $tester = new CommandTester($command);
 
         $tester->execute(['--all' => true]);
@@ -361,11 +319,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
     {
         $globalFailureReceiverName = 'failure_receiver';
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($globalFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($globalFailureReceiverName)->willReturn($this->createMock(ListableReceiverInterface::class));
-
-        $command = new FailedMessagesRemoveCommand('failure_receiver', $serviceLocator);
+        $command = new FailedMessagesRemoveCommand('failure_receiver', new ServiceLocator([$globalFailureReceiverName => fn () => $this->createStub(ListableReceiverInterface::class)]));
         $tester = new CommandTester($command);
 
         $this->expectException(RuntimeException::class);
@@ -387,11 +341,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $receiver->expects($this->once())->method('all')->willReturn($series);
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->expects($this->once())->method('has')->with($globalFailureReceiverName)->willReturn(true);
-        $serviceLocator->expects($this->any())->method('get')->with($globalFailureReceiverName)->willReturn($receiver);
-
-        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, $serviceLocator);
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->execute(['--all' => true, '--force' => true, '--show-messages' => true]);
 
@@ -402,16 +352,12 @@ class FailedMessagesRemoveCommandTest extends TestCase
     public function testSuccessMessageGoesToStdout()
     {
         $globalFailureReceiverName = 'failure_receiver';
-        $receiver = $this->createMock(ListableReceiverInterface::class);
+        $receiver = $this->createStub(ListableReceiverInterface::class);
 
         $envelope = new Envelope(new \stdClass(), [new TransportMessageIdStamp('some_id')]);
         $receiver->method('find')->with('some_id')->willReturn($envelope);
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->method('has')->willReturn(true);
-        $serviceLocator->method('get')->willReturn($receiver);
-
-        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, $serviceLocator);
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->execute(['id' => ['some_id'], '--force' => true], ['capture_stderr_separately' => true]);
 
@@ -425,15 +371,11 @@ class FailedMessagesRemoveCommandTest extends TestCase
     public function testErrorMessageGoesToStderr()
     {
         $globalFailureReceiverName = 'failure_receiver';
-        $receiver = $this->createMock(ListableReceiverInterface::class);
+        $receiver = $this->createStub(ListableReceiverInterface::class);
 
         $receiver->method('find')->with('not_found')->willReturn(null);
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->method('has')->willReturn(true);
-        $serviceLocator->method('get')->willReturn($receiver);
-
-        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, $serviceLocator);
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->execute(['id' => ['not_found']], ['capture_stderr_separately' => true]);
 
@@ -447,16 +389,12 @@ class FailedMessagesRemoveCommandTest extends TestCase
     public function testNoteMessageGoesToStderr()
     {
         $globalFailureReceiverName = 'failure_receiver';
-        $receiver = $this->createMock(ListableReceiverInterface::class);
+        $receiver = $this->createStub(ListableReceiverInterface::class);
 
         $envelope = new Envelope(new \stdClass(), [new TransportMessageIdStamp('some_id')]);
         $receiver->method('find')->with('some_id')->willReturn($envelope);
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
-        $serviceLocator->method('has')->willReturn(true);
-        $serviceLocator->method('get')->willReturn($receiver);
-
-        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, $serviceLocator);
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->setInputs(['no']);
         $tester->execute(['id' => ['some_id']], ['capture_stderr_separately' => true]);

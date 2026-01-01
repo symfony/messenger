@@ -30,7 +30,7 @@ class SendersLocatorTest extends TestCase
 {
     public function testItReturnsTheSenderBasedOnTheMessageClass()
     {
-        $sender = $this->createMock(SenderInterface::class);
+        $sender = $this->createStub(SenderInterface::class);
         $sendersLocator = $this->createContainer([
             'my_sender' => $sender,
         ]);
@@ -44,8 +44,8 @@ class SendersLocatorTest extends TestCase
 
     public function testItReturnsTheSenderBasedOnTransportNamesStamp()
     {
-        $mySender = $this->createMock(SenderInterface::class);
-        $otherSender = $this->createMock(SenderInterface::class);
+        $mySender = $this->createStub(SenderInterface::class);
+        $otherSender = $this->createStub(SenderInterface::class);
         $sendersLocator = $this->createContainer([
             'my_sender' => $mySender,
             'other_sender' => $otherSender,
@@ -115,9 +115,9 @@ class SendersLocatorTest extends TestCase
 
     public function testSendersMapWithFallback()
     {
-        $firstSender = $this->createMock(SenderInterface::class);
-        $secondSender = $this->createMock(SenderInterface::class);
-        $thirdSender = $this->createMock(SenderInterface::class);
+        $firstSender = $this->createStub(SenderInterface::class);
+        $secondSender = $this->createStub(SenderInterface::class);
+        $thirdSender = $this->createStub(SenderInterface::class);
         $sendersLocator = $this->createContainer([
             'first' => $firstSender,
             'second' => $secondSender,

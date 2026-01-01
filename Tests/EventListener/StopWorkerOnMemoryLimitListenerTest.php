@@ -16,6 +16,7 @@ use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\Messenger\Event\WorkerRunningEvent;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMemoryLimitListener;
+use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\Worker;
 
 class StopWorkerOnMemoryLimitListenerTest extends TestCase
@@ -48,8 +49,7 @@ class StopWorkerOnMemoryLimitListenerTest extends TestCase
 
         $memoryResolver = fn () => 70;
 
-        $worker = $this->createMock(Worker::class);
-        $event = new WorkerRunningEvent($worker, false);
+        $event = new WorkerRunningEvent(new Worker([], new MessageBus()), false);
 
         $memoryLimitListener = new StopWorkerOnMemoryLimitListener(64, $logger, $memoryResolver);
         $memoryLimitListener->onWorkerRunning($event);
