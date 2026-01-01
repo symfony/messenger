@@ -232,8 +232,8 @@ class DispatchAfterCurrentBusMiddlewareTest extends TestCase
             $eventHandlingMiddleware,
         ]);
 
-        $fakePutMessageOnQueue = $this->createMock(MiddlewareInterface::class);
-        $fakePutMessageOnQueue->expects($this->any())
+        $fakePutMessageOnQueue = $this->createStub(MiddlewareInterface::class);
+        $fakePutMessageOnQueue
             ->method('handle')
             ->with($this->callback(function ($envelope) use ($messageBusAfterQueue) {
                 // Fake putting the message on the queue
@@ -274,7 +274,7 @@ class DispatchAfterCurrentBusMiddlewareTest extends TestCase
         $event = new DummyEvent('First event');
 
         $middleware = new DispatchAfterCurrentBusMiddleware();
-        $handlingMiddleware = $this->createMock(MiddlewareInterface::class);
+        $handlingMiddleware = $this->createStub(MiddlewareInterface::class);
 
         $handlingMiddleware
             ->method('handle')
@@ -286,9 +286,9 @@ class DispatchAfterCurrentBusMiddlewareTest extends TestCase
             $handlingMiddleware,
         ]);
 
-        $enveloppe = $eventBus->dispatch($event, [new DispatchAfterCurrentBusStamp()]);
+        $envelope = $eventBus->dispatch($event, [new DispatchAfterCurrentBusStamp()]);
 
-        self::assertNull($enveloppe->last(DispatchAfterCurrentBusStamp::class));
+        self::assertNull($envelope->last(DispatchAfterCurrentBusStamp::class));
     }
 
     private function expectHandledMessage($message): Callback

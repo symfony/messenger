@@ -16,6 +16,7 @@ use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetter;
 use Symfony\Component\Messenger\Event\WorkerRunningEvent;
 use Symfony\Component\Messenger\Event\WorkerStoppedEvent;
 use Symfony\Component\Messenger\EventListener\ResetServicesListener;
+use Symfony\Component\Messenger\MessageBus;
 use Symfony\Component\Messenger\Worker;
 
 class ResetServicesListenerTest extends TestCase
@@ -34,7 +35,7 @@ class ResetServicesListenerTest extends TestCase
         $servicesResetter = $this->createMock(ServicesResetter::class);
         $servicesResetter->expects($shouldReset ? $this->once() : $this->never())->method('reset');
 
-        $event = new WorkerRunningEvent($this->createMock(Worker::class), !$shouldReset);
+        $event = new WorkerRunningEvent(new Worker([], new MessageBus()), !$shouldReset);
 
         $resetListener = new ResetServicesListener($servicesResetter);
         $resetListener->resetServices($event);
@@ -45,7 +46,7 @@ class ResetServicesListenerTest extends TestCase
         $servicesResetter = $this->createMock(ServicesResetter::class);
         $servicesResetter->expects($this->once())->method('reset');
 
-        $event = new WorkerStoppedEvent($this->createMock(Worker::class));
+        $event = new WorkerStoppedEvent(new Worker([], new MessageBus()));
 
         $resetListener = new ResetServicesListener($servicesResetter);
         $resetListener->resetServicesAtStop($event);
