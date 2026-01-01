@@ -33,7 +33,7 @@ class InMemoryTransportTest extends TestCase
 
     protected function setUp(): void
     {
-        $this->serializer = $this->createMock(SerializerInterface::class);
+        $this->serializer = $this->createStub(SerializerInterface::class);
         $this->transport = new InMemoryTransport();
         $this->serializeTransport = new InMemoryTransport($this->serializer);
     }

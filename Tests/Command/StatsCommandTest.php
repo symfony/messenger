@@ -27,14 +27,13 @@ class StatsCommandTest extends TestCase
 
     protected function setUp(): void
     {
-        $messageCountableTransport = $this->createMock(MessageCountAwareInterface::class);
+        $messageCountableTransport = $this->createStub(MessageCountAwareInterface::class);
         $messageCountableTransport->method('getMessageCount')->willReturn(6);
 
-        $simpleTransport = $this->createMock(TransportInterface::class);
+        $simpleTransport = $this->createStub(TransportInterface::class);
 
         // mock a service locator
-        /** @var MockObject&ServiceLocator $serviceLocator */
-        $serviceLocator = $this->createMock(ServiceLocator::class);
+        $serviceLocator = $this->createStub(ServiceLocator::class);
         $serviceLocator
             ->method('get')
             ->willReturnCallback(static function (string $transportName) use ($messageCountableTransport, $simpleTransport) {
