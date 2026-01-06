@@ -534,14 +534,14 @@ class WorkerTest extends TestCase
             static $i = 0;
             if (1 < ++$i) {
                 $event->getWorker()->stop();
-                $this->assertSame(1, $receiver->getAcknowledgeCount());
-            } else {
-                $this->assertSame(0, $receiver->getAcknowledgeCount());
             }
+            $this->assertSame(0, $receiver->getAcknowledgeCount());
         });
 
         $worker = new Worker([$receiver], $bus, $dispatcher, clock: new MockClock());
         $worker->run();
+
+        $this->assertSame(1, $receiver->getAcknowledgeCount());
 
         $this->assertSame($expectedMessages, $handler->processedMessages);
     }
@@ -608,7 +608,7 @@ class WorkerTest extends TestCase
         $unacks = $unacksProperty->getValue($worker);
         $dummyHandler = new DummyBatchHandler();
         $envelopeWithNoAutoAck = $envelope->with(new NoAutoAckStamp(new HandlerDescriptor($dummyHandler)));
-        $unacks[$dummyHandler] = [$envelopeWithNoAutoAck, 'transport'];
+        $unacks[$dummyHandler] = [$envelopeWithNoAutoAck, 'transport', false];
 
         $worker->run();
 
