@@ -39,7 +39,9 @@
     },
     "conflict": {
         "symfony/console": "<7.4",
-        "symfony/event-dispatcher-contracts": "<2.5"
+        "symfony/event-dispatcher-contracts": "<2.5",
+        "symfony/lock": "<7.4",
+        "symfony/serializer": "<7.4.4"
     },
     "autoload": {
         "psr-4": { "Symfony\\Component\\Messenger\\": "" },
