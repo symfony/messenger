@@ -63,10 +63,10 @@ class SendersLocatorTest extends TestCase
     #[TestWith([DummyMessageWithInterfaceWithAttribute::class, ['first_sender', 'third_sender', 'second_sender']])]
     public function testItReturnsTheSenderBasedOnAsMessageAttribute(string $messageClass, array $expectedSenders)
     {
-        $firstSender = $this->createMock(SenderInterface::class);
-        $secondSender = $this->createMock(SenderInterface::class);
-        $thirdSender = $this->createMock(SenderInterface::class);
-        $otherSender = $this->createMock(SenderInterface::class);
+        $firstSender = $this->createStub(SenderInterface::class);
+        $secondSender = $this->createStub(SenderInterface::class);
+        $thirdSender = $this->createStub(SenderInterface::class);
+        $otherSender = $this->createStub(SenderInterface::class);
         $sendersLocator = $this->createContainer([
             'first_sender' => $firstSender,
             'second_sender' => $secondSender,
@@ -81,9 +81,9 @@ class SendersLocatorTest extends TestCase
 
     public function testAsMessageAttributeIsOverridenByTransportNamesStamp()
     {
-        $firstSender = $this->createMock(SenderInterface::class);
-        $secondSender = $this->createMock(SenderInterface::class);
-        $otherSender = $this->createMock(SenderInterface::class);
+        $firstSender = $this->createStub(SenderInterface::class);
+        $secondSender = $this->createStub(SenderInterface::class);
+        $otherSender = $this->createStub(SenderInterface::class);
         $sendersLocator = $this->createContainer([
             'first_sender' => $firstSender,
             'second_sender' => $secondSender,
@@ -97,9 +97,9 @@ class SendersLocatorTest extends TestCase
 
     public function testAsMessageAttributeIsOverridenByUserConfiguration()
     {
-        $firstSender = $this->createMock(SenderInterface::class);
-        $secondSender = $this->createMock(SenderInterface::class);
-        $otherSender = $this->createMock(SenderInterface::class);
+        $firstSender = $this->createStub(SenderInterface::class);
+        $secondSender = $this->createStub(SenderInterface::class);
+        $otherSender = $this->createStub(SenderInterface::class);
         $sendersLocator = $this->createContainer([
             'first_sender' => $firstSender,
             'second_sender' => $secondSender,
