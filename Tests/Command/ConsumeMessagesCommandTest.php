@@ -379,11 +379,11 @@ class ConsumeMessagesCommandTest extends TestCase
         $envelope2 = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
         $envelope3 = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
 
-        $receiver1 = $this->createMock(ReceiverInterface::class);
+        $receiver1 = $this->createStub(ReceiverInterface::class);
         $receiver1->method('get')->willReturn([$envelope1]);
-        $receiver2 = $this->createMock(ReceiverInterface::class);
+        $receiver2 = $this->createStub(ReceiverInterface::class);
         $receiver2->method('get')->willReturn([$envelope2]);
-        $receiver3 = $this->createMock(ReceiverInterface::class);
+        $receiver3 = $this->createStub(ReceiverInterface::class);
         $receiver3->method('get')->willReturn([$envelope3]);
 
         $receiverLocator = new Container();
@@ -428,13 +428,13 @@ class ConsumeMessagesCommandTest extends TestCase
         $envelope3 = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
         $envelope4 = new Envelope(new \stdClass(), [new BusNameStamp('dummy-bus')]);
 
-        $receiver1 = $this->createMock(ReceiverInterface::class);
+        $receiver1 = $this->createStub(ReceiverInterface::class);
         $receiver1->method('get')->willReturn([$envelope1]);
-        $receiver2 = $this->createMock(ReceiverInterface::class);
+        $receiver2 = $this->createStub(ReceiverInterface::class);
         $receiver2->method('get')->willReturn([$envelope2]);
-        $receiver3 = $this->createMock(ReceiverInterface::class);
+        $receiver3 = $this->createStub(ReceiverInterface::class);
         $receiver3->method('get')->willReturn([$envelope3]);
-        $receiver4 = $this->createMock(ReceiverInterface::class);
+        $receiver4 = $this->createStub(ReceiverInterface::class);
         $receiver4->method('get')->willReturn([$envelope4]);
 
         $receiverLocator = new Container();
