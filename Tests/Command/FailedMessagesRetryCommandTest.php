@@ -205,7 +205,7 @@ class FailedMessagesRetryCommandTest extends TestCase
         $this->assertSame(['2ab50dfa1fbf', '78c2da843723'], $suggestions);
     }
 
-   public function testSuccessMessageGoesToStdout()
+    public function testSuccessMessageGoesToStdout()
     {
         $envelope = new Envelope(new \stdClass(), [new TransportMessageIdStamp('some_id')]);
         $receiver = $this->createStub(ListableReceiverInterface::class);
@@ -309,14 +309,9 @@ class FailedMessagesRetryCommandTest extends TestCase
         $failureTransportName = 'failure_receiver';
         $originalTransportName = 'original_receiver';
 
-        $serviceLocator = $this->createMock(ServiceLocator::class);
         $receiver = $this->createMock(ListableReceiverInterface::class);
 
         $dispatcher = new EventDispatcher();
-        $bus = $this->createMock(MessageBusInterface::class);
-
-        $serviceLocator->method('has')->willReturn(true);
-        $serviceLocator->method('get')->with($failureTransportName)->willReturn($receiver);
 
         $receiver->expects($this->once())->method('find')
             ->willReturn(Envelope::wrap(new \stdClass(), [
@@ -328,8 +323,8 @@ class FailedMessagesRetryCommandTest extends TestCase
 
         $command = new FailedMessagesRetryCommand(
             $failureTransportName,
-            $serviceLocator,
-            $bus,
+            new ServiceLocator([$failureTransportName => fn () => $receiver]),
+            new MessageBus(),
             $dispatcher
         );
 
