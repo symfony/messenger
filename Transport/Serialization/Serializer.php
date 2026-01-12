@@ -12,6 +12,7 @@
 namespace Symfony\Component\Messenger\Transport\Serialization;
 
 use Symfony\Component\Lock\Serializer\LockKeyNormalizer;
+use Symfony\Component\Messenger\Attribute\AsMessage;
 use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Exception\LogicException;
 use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
@@ -39,13 +40,23 @@ class Serializer implements SerializerInterface
 
     private SymfonySerializerInterface $serializer;
 
+    /**
+     * @var array<string-class, string>
+     */
+    private array $classToTypeMap = [];
+
+    /**
+     * @pram array<string, class-string> $typeToClassMap
+     */
     public function __construct(
         ?SymfonySerializerInterface $serializer = null,
         private string $format = 'json',
         private array $context = [],
+        private array $typeToClassMap = [],
     ) {
         $this->serializer = $serializer ?? self::create()->serializer;
         $this->context += [self::MESSENGER_SERIALIZATION_CONTEXT => true];
+        $this->classToTypeMap = array_flip($this->typeToClassMap);
     }
 
     public static function create(): self
@@ -89,8 +100,11 @@ class Serializer implements SerializerInterface
             $context = $serializerStamp->getContext() + $context;
         }
 
+        $type = $encodedEnvelope['headers']['type'];
+        $type = $this->typeToClassMap[$type] ?? $type;
+
         try {
-            $message = $this->serializer->deserialize($encodedEnvelope['body'], $encodedEnvelope['headers']['type'], $this->format, $context);
+            $message = $this->serializer->deserialize($encodedEnvelope['body'], $type, $this->format, $context);
         } catch (ExceptionInterface $e) {
             throw new MessageDecodingFailedException('Could not decode message: '.$e->getMessage(), $e->getCode(), $e);
         }
@@ -111,7 +125,11 @@ class Serializer implements SerializerInterface
 
         $envelope = $envelope->withoutStampsOfType(NonSendableStampInterface::class);
 
-        $headers = ['type' => $envelope->getMessage()::class] + $this->encodeStamps($envelope) + $this->getContentTypeHeader();
+        $headers = [
+            'type' => $this->getTypeFromEnvelope($envelope),
+            ...$this->encodeStamps($envelope),
+            ...$this->getContentTypeHeader(),
+        ];
 
         return [
             'body' => $serializedMessageStamp
@@ -187,5 +205,26 @@ class Serializer implements SerializerInterface
             'csv' => 'text/csv',
             default => null,
         };
+    }
+
+    private function getTypeFromEnvelope(Envelope $envelope): string
+    {
+        $messageClass = $envelope->getMessage()::class;
+
+        if (isset($this->classToTypeMap[$messageClass])) {
+            return $this->classToTypeMap[$messageClass];
+        }
+
+        foreach ([$messageClass] + class_parents($messageClass) + class_implements($messageClass) as $class) {
+            foreach ((new \ReflectionClass($class))->getAttributes(AsMessage::class, \ReflectionAttribute::IS_INSTANCEOF) as $refAttr) {
+                $asMessage = $refAttr->newInstance();
+
+                if ($asMessage->serializedTypeName) {
+                    return $this->classToTypeMap[$messageClass] = $asMessage->serializedTypeName;
+                }
+            }
+        }
+
+        return $this->classToTypeMap[$messageClass] = $messageClass;
     }
 }
