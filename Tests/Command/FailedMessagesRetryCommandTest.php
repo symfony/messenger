@@ -56,7 +56,7 @@ class FailedMessagesRetryCommandTest extends TestCase
 
         $command = new FailedMessagesRetryCommand(
             $failureTransportName,
-            new ServiceLocator([$failureTransportName => fn () => $receiver]),
+            new ServiceLocator([$failureTransportName => static fn () => $receiver]),
             $bus,
             $dispatcher
         );
@@ -80,9 +80,9 @@ class FailedMessagesRetryCommandTest extends TestCase
         $command = new FailedMessagesRetryCommand(
             $failureTransportName,
             new ServiceLocator([
-                $failureTransportName => fn () => $receiver,
-                'failure_receiver_2' => fn () => $receiver,
-                'failure_receiver_3' => fn () => $receiver,
+                $failureTransportName => static fn () => $receiver,
+                'failure_receiver_2' => static fn () => $receiver,
+                'failure_receiver_3' => static fn () => $receiver,
             ]),
             new MessageBus(),
             $dispatcher
@@ -126,7 +126,7 @@ class FailedMessagesRetryCommandTest extends TestCase
 
         $command = new FailedMessagesRetryCommand(
             $failureTransportName,
-            new ServiceLocator([$failureTransportName => fn () => $receiver]),
+            new ServiceLocator([$failureTransportName => static fn () => $receiver]),
             $bus,
             $dispatcher
         );
@@ -146,8 +146,8 @@ class FailedMessagesRetryCommandTest extends TestCase
         $command = new FailedMessagesRetryCommand(
             $globalFailureReceiverName,
             new ServiceLocator([
-                'global_receiver' => fn () => $receiver,
-                $globalFailureReceiverName => fn () => $receiver,
+                'global_receiver' => static fn () => $receiver,
+                $globalFailureReceiverName => static fn () => $receiver,
             ]),
             new MessageBus(),
             new EventDispatcher()
@@ -170,7 +170,7 @@ class FailedMessagesRetryCommandTest extends TestCase
 
         $command = new FailedMessagesRetryCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]),
+            new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver]),
             new MessageBus(),
             new EventDispatcher()
         );
@@ -194,7 +194,7 @@ class FailedMessagesRetryCommandTest extends TestCase
 
         $command = new FailedMessagesRetryCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$anotherFailureReceiverName => fn () => $receiver]),
+            new ServiceLocator([$anotherFailureReceiverName => static fn () => $receiver]),
             new MessageBus(),
             new EventDispatcher()
         );
@@ -213,7 +213,7 @@ class FailedMessagesRetryCommandTest extends TestCase
 
         $command = new FailedMessagesRetryCommand(
             'failure_receiver',
-            new ServiceLocator(['failure_receiver' => fn () => $receiver]),
+            new ServiceLocator(['failure_receiver' => static fn () => $receiver]),
             new MessageBus(),
             new EventDispatcher()
         );
@@ -237,7 +237,7 @@ class FailedMessagesRetryCommandTest extends TestCase
 
         $command = new FailedMessagesRetryCommand(
             'failure_receiver',
-            new ServiceLocator(['failure_receiver' => fn () => $receiver]),
+            new ServiceLocator(['failure_receiver' => static fn () => $receiver]),
             new MessageBus(),
             new EventDispatcher()
         );
@@ -287,7 +287,7 @@ class FailedMessagesRetryCommandTest extends TestCase
 
         $command = new FailedMessagesRetryCommand(
             'failure_receiver',
-            new ServiceLocator(['failure_receiver' => fn () => $receiver]),
+            new ServiceLocator(['failure_receiver' => static fn () => $receiver]),
             new MessageBus(),
             new EventDispatcher()
         );
@@ -323,7 +323,7 @@ class FailedMessagesRetryCommandTest extends TestCase
 
         $command = new FailedMessagesRetryCommand(
             $failureTransportName,
-            new ServiceLocator([$failureTransportName => fn () => $receiver]),
+            new ServiceLocator([$failureTransportName => static fn () => $receiver]),
             new MessageBus(),
             $dispatcher
         );

@@ -35,7 +35,7 @@ class SendFailedMessageToFailureTransportListenerTest extends TestCase
         }))->willReturnArgument(0);
 
         $serviceLocator = new ServiceLocator([
-            $receiverName => fn () => $sender,
+            $receiverName => static fn () => $sender,
         ]);
         $listener = new SendFailedMessageToFailureTransportListener($serviceLocator);
 
@@ -104,7 +104,7 @@ class SendFailedMessageToFailureTransportListenerTest extends TestCase
         }))->willReturnArgument(0);
 
         $serviceLocator = new ServiceLocator([
-            $receiverName => fn () => $sender,
+            $receiverName => static fn () => $sender,
         ]);
 
         $listener = new SendFailedMessageToFailureTransportListener($serviceLocator);

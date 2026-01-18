@@ -33,7 +33,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
+            new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -51,7 +51,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
+            new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -69,7 +69,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $command = new FailedMessagesRemoveCommand(
             $failureReveiverName,
-            new ServiceLocator([$failureReveiverName => fn () => $receiver])
+            new ServiceLocator([$failureReveiverName => static fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -118,7 +118,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
+            new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -151,7 +151,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
+            new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -193,7 +193,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
+            new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -214,8 +214,8 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
             new ServiceLocator([
-                'global_receiver' => fn () => $receiver,
-                $globalFailureReceiverName => fn () => $receiver,
+                'global_receiver' => static fn () => $receiver,
+                $globalFailureReceiverName => static fn () => $receiver,
             ])
         );
         $tester = new CommandCompletionTester($command);
@@ -236,7 +236,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
+            new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver])
         );
         $tester = new CommandCompletionTester($command);
 
@@ -258,7 +258,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $command = new FailedMessagesRemoveCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$anotherFailureReceiverName => fn () => $receiver])
+            new ServiceLocator([$anotherFailureReceiverName => static fn () => $receiver])
         );
 
         $tester = new CommandCompletionTester($command);
@@ -286,7 +286,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $receiver = $this->createStub(ListableReceiverInterface::class);
 
-        $command = new FailedMessagesRemoveCommand('failure_receiver', new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
+        $command = new FailedMessagesRemoveCommand('failure_receiver', new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver]));
         $tester = new CommandTester($command);
 
         $tester->execute(['--all' => true]);
@@ -302,7 +302,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $receiver = $this->createMock(DoctrineReceiver::class);
         $receiver->expects($this->once())->method('getMessageCount')->willReturn(2);
 
-        $command = new FailedMessagesRemoveCommand('failure_receiver', new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
+        $command = new FailedMessagesRemoveCommand('failure_receiver', new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver]));
         $tester = new CommandTester($command);
 
         $tester->execute(['--all' => true]);
@@ -337,7 +337,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $receiver->expects($this->once())->method('all')->willReturn($series);
 
-        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->execute(['--all' => true, '--force' => true, '--show-messages' => true]);
 
@@ -353,7 +353,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $envelope = new Envelope(new \stdClass(), [new TransportMessageIdStamp('some_id')]);
         $receiver->method('find')->with('some_id')->willReturn($envelope);
 
-        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->execute(['id' => ['some_id'], '--force' => true], ['capture_stderr_separately' => true]);
 
@@ -371,7 +371,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
 
         $receiver->method('find')->with('not_found')->willReturn(null);
 
-        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->execute(['id' => ['not_found']], ['capture_stderr_separately' => true]);
 
@@ -390,7 +390,7 @@ class FailedMessagesRemoveCommandTest extends TestCase
         $envelope = new Envelope(new \stdClass(), [new TransportMessageIdStamp('some_id')]);
         $receiver->method('find')->with('some_id')->willReturn($envelope);
 
-        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => fn () => $receiver]));
+        $command = new FailedMessagesRemoveCommand($globalFailureReceiverName, new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->setInputs(['no']);
         $tester->execute(['id' => ['some_id']], ['capture_stderr_separately' => true]);

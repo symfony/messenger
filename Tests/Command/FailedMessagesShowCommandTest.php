@@ -61,7 +61,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $command = new FailedMessagesShowCommand(
             $failureTransportName,
-            new ServiceLocator([$failureTransportName => fn () => $receiver])
+            new ServiceLocator([$failureTransportName => static fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -101,7 +101,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $command = new FailedMessagesShowCommand(
             $failureTransportName,
-            new ServiceLocator([$failureTransportName => fn () => $receiver])
+            new ServiceLocator([$failureTransportName => static fn () => $receiver])
         );
         $tester = new CommandTester($command);
         $tester->execute(['id' => 15]);
@@ -126,7 +126,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $command = new FailedMessagesShowCommand(
             $failureTransportName,
-            new ServiceLocator([$failureTransportName => fn () => $receiver])
+            new ServiceLocator([$failureTransportName => static fn () => $receiver])
         );
 
         $this->expectExceptionMessage('The "failure_receiver" receiver does not support listing or showing specific messages.');
@@ -153,9 +153,9 @@ class FailedMessagesShowCommandTest extends TestCase
         $command = new FailedMessagesShowCommand(
             $failureTransportName,
             new ServiceLocator([
-                $failureTransportName => fn () => $receiver,
-                'failure_receiver_2' => fn () => $receiver,
-                'failure_receiver_3' => fn () => $receiver,
+                $failureTransportName => static fn () => $receiver,
+                'failure_receiver_2' => static fn () => $receiver,
+                'failure_receiver_3' => static fn () => $receiver,
             ])
         );
         $tester = new CommandTester($command);
@@ -184,7 +184,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $command = new FailedMessagesShowCommand(
             $failureTransportName,
-            new ServiceLocator([$failureTransportName => fn () => $receiver])
+            new ServiceLocator([$failureTransportName => static fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -208,7 +208,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $command = new FailedMessagesShowCommand(
             $failureTransportName,
-            new ServiceLocator([$failureTransportName => fn () => $receiver])
+            new ServiceLocator([$failureTransportName => static fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -230,7 +230,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $failureTransportName = 'failure_receiver';
 
-        $command = new FailedMessagesShowCommand('failure_receiver', new ServiceLocator([$failureTransportName => fn () => $receiver]));
+        $command = new FailedMessagesShowCommand('failure_receiver', new ServiceLocator([$failureTransportName => static fn () => $receiver]));
 
         $tester = new CommandTester($command);
         $tester->execute([]);
@@ -259,7 +259,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $failureTransportName = 'failure_receiver';
 
-        $command = new FailedMessagesShowCommand('failure_receiver', new ServiceLocator([$failureTransportName => fn () => $receiver]));
+        $command = new FailedMessagesShowCommand('failure_receiver', new ServiceLocator([$failureTransportName => static fn () => $receiver]));
 
         $tester = new CommandTester($command);
         $tester->execute(['--stats' => 1]);
@@ -274,7 +274,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $command = new FailedMessagesShowCommand(
             $failureTransportName,
-            new ServiceLocator([$failureTransportName => fn () => $receiver])
+            new ServiceLocator([$failureTransportName => static fn () => $receiver])
         );
 
         $this->expectExceptionMessage('The message "15" was not found.');
@@ -298,7 +298,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $failureTransportName = 'failure_receiver';
 
-        $command = new FailedMessagesShowCommand($failureTransportName, new ServiceLocator([$failureTransportName => fn () => $receiver]));
+        $command = new FailedMessagesShowCommand($failureTransportName, new ServiceLocator([$failureTransportName => static fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->execute(['id' => 42], ['verbosity' => OutputInterface::VERBOSITY_VERY_VERBOSE]);
         $this->assertStringMatchesFormat(\sprintf(<<<'EOF'
@@ -342,7 +342,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $command = new FailedMessagesShowCommand(
             'global_but_not_used',
-            new ServiceLocator([$failureTransportName => fn () => $receiver])
+            new ServiceLocator([$failureTransportName => static fn () => $receiver])
         );
 
         $tester = new CommandTester($command);
@@ -364,7 +364,7 @@ class FailedMessagesShowCommandTest extends TestCase
             $globalFailureReceiverName,
             new ServiceLocator([
                 'global_receiver' => $receiver,
-                $globalFailureReceiverName => fn () => $receiver,
+                $globalFailureReceiverName => static fn () => $receiver,
             ])
         );
         $tester = new CommandCompletionTester($command);
@@ -385,7 +385,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $command = new FailedMessagesShowCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$globalFailureReceiverName => fn () => $receiver])
+            new ServiceLocator([$globalFailureReceiverName => static fn () => $receiver])
         );
         $tester = new CommandCompletionTester($command);
 
@@ -407,7 +407,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $command = new FailedMessagesShowCommand(
             $globalFailureReceiverName,
-            new ServiceLocator([$anotherFailureReceiverName => fn () => $receiver])
+            new ServiceLocator([$anotherFailureReceiverName => static fn () => $receiver])
         );
         $tester = new CommandCompletionTester($command);
 
@@ -427,7 +427,7 @@ class FailedMessagesShowCommandTest extends TestCase
         $receiver = $this->createMock(ListableReceiverInterface::class);
         $receiver->expects($this->once())->method('all')->with(50)->willReturn([$envelope]);
 
-        $command = new FailedMessagesShowCommand('failure_receiver', new ServiceLocator(['failure_receiver' => fn () => $receiver]));
+        $command = new FailedMessagesShowCommand('failure_receiver', new ServiceLocator(['failure_receiver' => static fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->execute([], ['capture_stderr_separately' => true]);
 
@@ -471,7 +471,7 @@ class FailedMessagesShowCommandTest extends TestCase
             }
         };
 
-        $command = new FailedMessagesShowCommand('failure_receiver', new ServiceLocator(['failure_receiver' => fn () => $receiver]));
+        $command = new FailedMessagesShowCommand('failure_receiver', new ServiceLocator(['failure_receiver' => static fn () => $receiver]));
         $tester = new CommandTester($command);
         $tester->execute(['--max' => 5], ['capture_stderr_separately' => true]);
 
