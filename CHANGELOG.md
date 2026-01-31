@@ -1,6 +1,11 @@
 CHANGELOG
 =========
 
+8.1
+---
+
+ * Add regex support for transport name patterns in the `messenger:consume` command
+
 8.0
 ---
 
