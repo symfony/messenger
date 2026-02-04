@@ -35,7 +35,7 @@ class SendFailedMessageToFailureTransportListenerTest extends TestCase
         }))->willReturnArgument(0);
 
         $serviceLocator = new ServiceLocator([
-            $receiverName => fn () => $sender,
+            $receiverName => static fn () => $sender,
         ]);
         $listener = new SendFailedMessageToFailureTransportListener($serviceLocator);
 
@@ -60,14 +60,62 @@ class SendFailedMessageToFailureTransportListenerTest extends TestCase
         $listener->onMessageFailed($event);
     }
 
-    public function testDoNotRedeliverToFailedWithServiceLocator()
+    public function testDoNotRedeliverToSelfReferentialFailureTransport()
     {
         $receiverName = 'my_receiver';
 
         $sender = $this->createMock(SenderInterface::class);
         $sender->expects($this->never())->method('send');
 
-        $listener = new SendFailedMessageToFailureTransportListener(new ServiceLocator([]));
+        $serviceLocator = new ServiceLocator([
+            $receiverName => static fn () => $sender,
+        ]);
+        // The failure transport for 'my_receiver' is itself: skip to prevent an infinite loop
+        $listener = new SendFailedMessageToFailureTransportListener($serviceLocator, null, [$receiverName => $receiverName]);
+        $envelope = new Envelope(new \stdClass());
+        $event = new WorkerMessageFailedEvent($envelope, $receiverName, new \Exception());
+
+        $listener->onMessageFailed($event);
+    }
+
+    public function testItForwardsToChainedFailureTransportWhenDifferentFromReceiver()
+    {
+        $receiverName = 'failed';
+        $chainedFailureTransportName = 'super_failed';
+
+        $sender = $this->createMock(SenderInterface::class);
+        $sender->expects($this->once())->method('send')->with($this->callback(function ($envelope) use ($receiverName) {
+            $this->assertInstanceOf(Envelope::class, $envelope);
+            $sentToFailureTransportStamp = $envelope->last(SentToFailureTransportStamp::class);
+            $this->assertNotNull($sentToFailureTransportStamp);
+            $this->assertSame($receiverName, $sentToFailureTransportStamp->getOriginalReceiverName());
+
+            return true;
+        }))->willReturnArgument(0);
+
+        $serviceLocator = new ServiceLocator([
+            $receiverName => static fn () => $sender,
+        ]);
+        // The failure transport for 'failed' is 'super_failed' (different): it should forward
+        $listener = new SendFailedMessageToFailureTransportListener($serviceLocator, null, [$receiverName => $chainedFailureTransportName]);
+        $envelope = new Envelope(new \stdClass());
+        $event = new WorkerMessageFailedEvent($envelope, $receiverName, new \Exception());
+
+        $listener->onMessageFailed($event);
+    }
+
+    public function testDoNotRedeliverToFailedWithStampFallback()
+    {
+        $receiverName = 'my_receiver';
+
+        $sender = $this->createMock(SenderInterface::class);
+        $sender->expects($this->never())->method('send');
+
+        // No $failureTransportsByName: falls back to SentToFailureTransportStamp check
+        $serviceLocator = new ServiceLocator([
+            $receiverName => static fn () => $sender,
+        ]);
+        $listener = new SendFailedMessageToFailureTransportListener($serviceLocator);
         $envelope = new Envelope(new \stdClass(), [
             new SentToFailureTransportStamp($receiverName),
         ]);
@@ -104,7 +152,7 @@ class SendFailedMessageToFailureTransportListenerTest extends TestCase
         }))->willReturnArgument(0);
 
         $serviceLocator = new ServiceLocator([
-            $receiverName => fn () => $sender,
+            $receiverName => static fn () => $sender,
         ]);
 
         $listener = new SendFailedMessageToFailureTransportListener($serviceLocator);

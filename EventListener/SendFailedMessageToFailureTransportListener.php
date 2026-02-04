@@ -26,13 +26,11 @@ use Symfony\Component\Messenger\Stamp\SentToFailureTransportStamp;
  */
 class SendFailedMessageToFailureTransportListener implements EventSubscriberInterface
 {
-    private ContainerInterface $failureSenders;
-    private ?LoggerInterface $logger;
-
-    public function __construct(ContainerInterface $failureSenders, ?LoggerInterface $logger = null)
-    {
-        $this->failureSenders = $failureSenders;
-        $this->logger = $logger;
+    public function __construct(
+        private ContainerInterface $failureSenders,
+        private ?LoggerInterface $logger = null,
+        private array $failureTransportsByName = [],
+    ) {
     }
 
     /**
@@ -53,7 +51,10 @@ class SendFailedMessageToFailureTransportListener implements EventSubscriberInte
         $envelope = $event->getEnvelope();
 
         // avoid re-sending to the failed sender
-        if (null !== $envelope->last(SentToFailureTransportStamp::class)) {
+        if (!$this->failureTransportsByName && $envelope->last(SentToFailureTransportStamp::class)) {
+            return;
+        }
+        if (($this->failureTransportsByName[$event->getReceiverName()] ?? null) === $event->getReceiverName()) {
             return;
         }
 
