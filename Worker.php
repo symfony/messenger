@@ -273,7 +273,6 @@ class Worker
             try {
                 $e = null;
                 $this->bus->dispatch($envelope->with(new FlushBatchHandlersStamp($force)));
-                unset($unacks[$batchHandler], $batchHandler);
             } catch (\Throwable $e) {
                 $envelope = $envelope->withoutAll(NoAutoAckStamp::class);
                 $this->acks[] = [$transportName, $envelope, $e];

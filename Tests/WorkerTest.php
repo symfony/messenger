@@ -47,6 +47,7 @@ use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use Symfony\Component\Messenger\Stamp\SentStamp;
 use Symfony\Component\Messenger\Stamp\StampInterface;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyMessage;
+use Symfony\Component\Messenger\Tests\Fixtures\DummyMessageInterface;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyReceiver;
 use Symfony\Component\Messenger\Tests\Fixtures\ResettableDummyReceiver;
 use Symfony\Component\Messenger\Transport\Receiver\KeepaliveReceiverInterface;
@@ -576,6 +577,52 @@ class WorkerTest extends TestCase
         $this->assertSame($expectedMessages, $handler->processedMessages);
     }
 
+    public function testFlushMultipleBatchOnStop()
+    {
+        $expectedMessages = [
+            new DummyMessage('Hey'),
+        ];
+
+        $secondHandlerExpectedMessages = [
+            new SecondHandlerDummyMessage('Ho'),
+        ];
+
+        $receiver = new DummyReceiver([
+            [new Envelope($expectedMessages[0])],
+        ]);
+
+        $secondHandlerReceiver = new DummyReceiver([
+            [new Envelope($secondHandlerExpectedMessages[0])],
+        ]);
+
+        $handler = new DummyBatchHandler();
+        $secondHandler = new SecondDummyBatchHandler();
+
+        $middleware = new HandleMessageMiddleware(new HandlersLocator([
+            DummyMessage::class => [new HandlerDescriptor($handler)],
+            SecondHandlerDummyMessage::class => [new HandlerDescriptor($secondHandler)],
+        ]));
+
+        $bus = new MessageBus([$middleware]);
+
+        $dispatcher = new EventDispatcher();
+        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver, $secondHandlerReceiver) {
+            static $i = 0;
+            if (1 < ++$i) {
+                $event->getWorker()->stop();
+            }
+
+            $this->assertSame(0, $receiver->getAcknowledgeCount());
+            $this->assertSame(0, $secondHandlerReceiver->getAcknowledgeCount());
+        });
+
+        $worker = new Worker(['first' => $receiver, 'second' => $secondHandlerReceiver], $bus, $dispatcher, clock: new MockClock());
+        $worker->run();
+
+        $this->assertSame($expectedMessages, $handler->processedMessages);
+        $this->assertSame($secondHandlerExpectedMessages, $secondHandler->processedMessages);
+    }
+
     public function testFlushRemovesNoAutoAckStampOnException()
     {
         $envelope = new Envelope(new DummyMessage('Test'));
@@ -791,5 +838,46 @@ class DummyBatchHandler implements BatchHandlerInterface
         foreach ($jobs as [$job, $ack]) {
             $ack->ack($job);
         }
+    }
+}
+
+class SecondDummyBatchHandler implements BatchHandlerInterface
+{
+    use BatchHandlerTrait;
+
+    public array $processedMessages;
+
+    public function __invoke(SecondHandlerDummyMessage $message, ?Acknowledger $ack = null)
+    {
+        return $this->handle($message, $ack);
+    }
+
+    private function shouldFlush(): bool
+    {
+        return 5 <= \count($this->jobs);
+    }
+
+    private function process(array $jobs): void
+    {
+        $this->processedMessages = array_column($jobs, 0);
+
+        foreach ($jobs as [$job, $ack]) {
+            $ack->ack($job);
+        }
+    }
+}
+
+class SecondHandlerDummyMessage implements DummyMessageInterface
+{
+    private string $message;
+
+    public function __construct(string $message)
+    {
+        $this->message = $message;
+    }
+
+    public function getMessage(): string
+    {
+        return $this->message;
     }
 }
