@@ -17,7 +17,6 @@ use Symfony\Component\Messenger\Envelope;
 use Symfony\Component\Messenger\Event\MessageSentToTransportsEvent;
 use Symfony\Component\Messenger\Event\SendMessageToTransportsEvent;
 use Symfony\Component\Messenger\Exception\NoSenderForMessageException;
-use Symfony\Component\Messenger\Stamp\FlushBatchHandlersStamp;
 use Symfony\Component\Messenger\Stamp\ReceivedStamp;
 use Symfony\Component\Messenger\Stamp\SentStamp;
 use Symfony\Component\Messenger\Transport\Sender\SendersLocatorInterface;
@@ -47,9 +46,7 @@ class SendMessageMiddleware implements MiddlewareInterface
 
         if ($envelope->all(ReceivedStamp::class)) {
             // it's a received message, do not send it back
-            if (!$envelope->all(FlushBatchHandlersStamp::class)) {
-                $this->logger?->info('Received message {class}', $context);
-            }
+            $this->logger?->info('Received message {class}', $context);
         } else {
             $senders = $this->sendersLocator->getSenders($envelope);
             $senders = \is_array($senders) ? $senders : iterator_to_array($senders);

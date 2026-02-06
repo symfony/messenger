@@ -20,10 +20,6 @@ trait BatchHandlerTrait
 
     public function flush(bool $force): void
     {
-        if (!$force && !$this->shouldFlush()) {
-            return;
-        }
-
         if ($jobs = $this->jobs) {
             $this->jobs = [];
             $this->process($jobs);
