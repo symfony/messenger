@@ -310,17 +310,11 @@ class FailedMessagesShowCommandTest extends TestCase
               message: "Things are bad!"
               code: 0
               file: "%s"
-              line: %d
+              line: %%d
               trace: {
-                %%s%%eTests%%eCommand%%eFailedMessagesShowCommandTest.php:%d {
-                  Symfony\Component\Messenger\Tests\Command\FailedMessagesShowCommandTest->testVeryVerboseOutputForSingleMessageContainsExceptionWithTraceWithServiceLocator()
-                  › {
-                  ›     $exception = new \RuntimeException('Things are bad!');
-                  ›     $exceptionLine = __LINE__ - 1;
-                }
             %%A
             EOF,
-            __FILE__, $exceptionLine, $exceptionLine),
+            __FILE__, $exceptionLine),
             $tester->getDisplay(true));
     }
 
