@@ -47,6 +47,9 @@ abstract class AbstractFailedMessagesCommand extends Command
 
     public function __construct(
         private ?string $globalFailureReceiverName,
+        /**
+         * @var ServiceProviderInterface<ReceiverInterface>
+         */
         protected ServiceProviderInterface $failureTransports,
         protected ?PhpSerializer $phpSerializer = null,
     ) {
@@ -60,7 +63,6 @@ abstract class AbstractFailedMessagesCommand extends Command
 
     protected function getMessageId(Envelope $envelope): mixed
     {
-        /** @var TransportMessageIdStamp $stamp */
         $stamp = $envelope->last(TransportMessageIdStamp::class);
 
         return $stamp?->getId();
@@ -72,13 +74,9 @@ abstract class AbstractFailedMessagesCommand extends Command
 
         $io->title('Failed Message Details');
 
-        /** @var SentToFailureTransportStamp|null $sentToFailureTransportStamp */
         $sentToFailureTransportStamp = $envelope->last(SentToFailureTransportStamp::class);
-        /** @var RedeliveryStamp|null $lastRedeliveryStamp */
         $lastRedeliveryStamp = $envelope->last(RedeliveryStamp::class);
-        /** @var ErrorDetailsStamp|null $lastErrorDetailsStamp */
         $lastErrorDetailsStamp = $envelope->last(ErrorDetailsStamp::class);
-        /** @var MessageDecodingFailedStamp|null $lastMessageDecodingFailedStamp */
         $lastMessageDecodingFailedStamp = $envelope->last(MessageDecodingFailedStamp::class);
 
         $rows = [
@@ -118,7 +116,6 @@ abstract class AbstractFailedMessagesCommand extends Command
 
         $io->table([], $rows);
 
-        /** @var RedeliveryStamp[] $redeliveryStamps */
         $redeliveryStamps = $envelope->all(RedeliveryStamp::class);
         $io->writeln(' Message history:');
         foreach ($redeliveryStamps as $redeliveryStamp) {
