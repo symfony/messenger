@@ -513,6 +513,8 @@ class WorkerTest extends TestCase
 
     public function testFlushBatchOnIdle()
     {
+        ClockMock::withClockMock(false);
+
         $expectedMessages = [
             new DummyMessage('Hey'),
         ];
@@ -538,11 +540,95 @@ class WorkerTest extends TestCase
                 $this->assertSame(1, $receiver->getAcknowledgeCount());
             } else {
                 $this->assertSame(0, $receiver->getAcknowledgeCount());
+                sleep(1);
             }
         });
 
         $worker = new Worker([$receiver], $bus, $dispatcher, clock: new MockClock());
         $worker->run();
+
+        $this->assertSame($expectedMessages, $handler->processedMessages);
+    }
+
+    public function testFlushBatchWithIdleTimeout()
+    {
+        ClockMock::withClockMock(false);
+
+        $expectedMessages = [
+            new DummyMessage('Hey'),
+            new DummyMessage('Bob'),
+            new DummyMessage('Hello'),
+            new DummyMessage('John'),
+        ];
+
+        $receiver = new DummyReceiver([
+            [new Envelope($expectedMessages[0])],
+            [new Envelope($expectedMessages[1])],
+            [new Envelope($expectedMessages[2])],
+            [new Envelope($expectedMessages[3])],
+        ]);
+
+        $handler = new DummyBatchHandler(batchSize: 5, idleTimeout: 3);
+
+        $middleware = new HandleMessageMiddleware(new HandlersLocator([
+            DummyMessage::class => [new HandlerDescriptor($handler)],
+        ]));
+
+        $bus = new MessageBus([$middleware]);
+
+        $dispatcher = new EventDispatcher();
+        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver) {
+            static $i = 0;
+            if (6 < ++$i) { // 6 seconds = 4 messages + 3 idle timeout - 1 sec that overlaps (last message)
+                $this->assertSame(4, $receiver->getAcknowledgeCount());
+                $event->getWorker()->stop();
+            } else {
+                $this->assertSame(0, $receiver->getAcknowledgeCount());
+                sleep(1);
+            }
+        });
+
+        $worker = new Worker([$receiver], $bus, $dispatcher, clock: new MockClock());
+        $worker->run();
+
+        $this->assertSame($expectedMessages, $handler->processedMessages);
+    }
+
+    public function testFlushBatchWithoutIdleTimeout()
+    {
+        ClockMock::withClockMock(false);
+
+        $expectedMessages = [
+            new DummyMessage('Hey'),
+        ];
+
+        $receiver = new DummyReceiver([
+            [new Envelope($expectedMessages[0])],
+            [],
+        ]);
+
+        $handler = new DummyBatchHandler(idleTimeout: null);
+
+        $middleware = new HandleMessageMiddleware(new HandlersLocator([
+            DummyMessage::class => [new HandlerDescriptor($handler)],
+        ]));
+
+        $bus = new MessageBus([$middleware]);
+
+        $dispatcher = new EventDispatcher();
+        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver) {
+            static $i = 0;
+            if (2 < ++$i) {
+                $event->getWorker()->stop();
+            }
+            $this->assertSame(0, $receiver->getAcknowledgeCount());
+            sleep(1);
+        });
+
+        $worker = new Worker([$receiver], $bus, $dispatcher, clock: new MockClock());
+        $worker->run();
+
+        $this->assertSame(1, $receiver->getAcknowledgeCount());
 
         $this->assertSame($expectedMessages, $handler->processedMessages);
     }
@@ -655,7 +741,7 @@ class WorkerTest extends TestCase
         $unacks = $unacksProperty->getValue($worker);
         $dummyHandler = new DummyBatchHandler();
         $envelopeWithNoAutoAck = $envelope->with(new NoAutoAckStamp(new HandlerDescriptor($dummyHandler)));
-        $unacks[$dummyHandler] = [$envelopeWithNoAutoAck, 'transport'];
+        $unacks[$dummyHandler] = [$envelopeWithNoAutoAck, 'transport', false];
 
         $worker->run();
 
@@ -811,8 +897,11 @@ class DummyBatchHandler implements BatchHandlerInterface
 
     public array $processedMessages;
 
-    public function __construct(private ?int $delay = null)
-    {
+    public function __construct(
+        private ?int $delay = null,
+        private int $batchSize = 2,
+        private ?int $idleTimeout = 1,
+    ) {
     }
 
     public function __invoke(DummyMessage $message, ?Acknowledger $ack = null)
@@ -820,9 +909,14 @@ class DummyBatchHandler implements BatchHandlerInterface
         return $this->handle($message, $ack);
     }
 
-    private function shouldFlush(): bool
+    private function getBatchSize(): int
     {
-        return 2 <= \count($this->jobs);
+        return $this->batchSize;
+    }
+
+    private function getIdleTimeout(): ?int
+    {
+        return $this->idleTimeout;
     }
 
     private function process(array $jobs): void
@@ -852,9 +946,9 @@ class SecondDummyBatchHandler implements BatchHandlerInterface
         return $this->handle($message, $ack);
     }
 
-    private function shouldFlush(): bool
+    private function getBatchSize(): int
     {
-        return 5 <= \count($this->jobs);
+        return 5;
     }
 
     private function process(array $jobs): void

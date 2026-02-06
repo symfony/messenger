@@ -5,6 +5,7 @@ CHANGELOG
 ---
 
  * Add regex support for transport name patterns in the `messenger:consume` command
+ * Add an idle timeout option to the `BatchHandlerTrait`
 
 8.0
 ---
