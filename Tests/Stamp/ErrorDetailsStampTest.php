@@ -111,4 +111,8 @@ class ErrorDetailsStampTest extends TestCase
 
 class RecoverableTestException extends \RuntimeException implements RecoverableExceptionInterface
 {
+    public function getRetryDelay(): ?int
+    {
+        return null;
+    }
 }
