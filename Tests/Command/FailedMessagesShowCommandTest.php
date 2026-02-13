@@ -225,8 +225,8 @@ class FailedMessagesShowCommandTest extends TestCase
             new RedeliveryStamp(0),
             ErrorDetailsStamp::create(new \RuntimeException('Things are bad!')),
         ]);
-        $receiver = $this->createStub(ListableReceiverInterface::class);
-        $receiver->method('all')->with()->willReturn([$envelope]);
+        $receiver = $this->createMock(ListableReceiverInterface::class);
+        $receiver->expects($this->exactly(3))->method('all')->with()->willReturn([$envelope]);
 
         $failureTransportName = 'failure_receiver';
 
@@ -254,8 +254,8 @@ class FailedMessagesShowCommandTest extends TestCase
             new RedeliveryStamp(0),
             ErrorDetailsStamp::create(new \RuntimeException('Things are bad!')),
         ]);
-        $receiver = $this->createStub(ListableReceiverInterface::class);
-        $receiver->method('all')->with()->willReturn([$envelope, $envelope]);
+        $receiver = $this->createMock(ListableReceiverInterface::class);
+        $receiver->expects($this->once())->method('all')->with()->willReturn([$envelope, $envelope]);
 
         $failureTransportName = 'failure_receiver';
 
