@@ -289,6 +289,9 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
         $options = [
             'sleep' => $input->getOption('sleep') * 1000000,
         ];
+        if (null !== $timeLimit) {
+            $options['time_limit'] = (int) $timeLimit;
+        }
         if ($queues = $input->getOption('queues')) {
             $options['queues'] = $queues;
         }

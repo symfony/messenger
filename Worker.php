@@ -87,7 +87,7 @@ class Worker
 
         $this->metadata->set(['queueNames' => $queueNames]);
 
-        $this->eventDispatcher?->dispatch(new WorkerStartedEvent($this));
+        $this->eventDispatcher?->dispatch(new WorkerStartedEvent($this, isset($options['time_limit']) ? $this->clock->now()->format('U.u') + (int) $options['time_limit'] : null, $options['sleep']));
 
         if ($queueNames) {
             // if queue names are specified, all receivers must implement the QueueReceiverInterface
