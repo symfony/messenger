@@ -43,7 +43,7 @@ class InMemoryTransportTest extends TestCase
     {
         $envelope = new Envelope(new \stdClass());
         $envelopeDecoded = Envelope::wrap(new DummyMessage('Hello.'));
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createStub(SerializerInterface::class);
         $serializer
             ->method('encode')
             ->willReturnCallback(function (Envelope $encodedEnvelope) use ($envelope) {
@@ -89,7 +89,7 @@ class InMemoryTransportTest extends TestCase
     {
         $envelope = new Envelope(new \stdClass());
         $envelopeDecoded = Envelope::wrap(new DummyMessage('Hello.'));
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createStub(SerializerInterface::class);
         $serializer
             ->method('encode')
             ->willReturnCallback(function (Envelope $encodedEnvelope) use ($envelope) {
@@ -134,7 +134,7 @@ class InMemoryTransportTest extends TestCase
     {
         $envelope = new Envelope(new \stdClass());
         $envelopeDecoded = Envelope::wrap(new DummyMessage('Hello.'));
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createStub(SerializerInterface::class);
         $serializer
             ->method('encode')
             ->willReturnCallback(function (Envelope $encodedEnvelope) use ($envelope) {
@@ -166,7 +166,7 @@ class InMemoryTransportTest extends TestCase
     {
         $envelope = new Envelope(new \stdClass());
         $envelopeDecoded = Envelope::wrap(new DummyMessage('Hello.'));
-        $serializer = $this->createMock(SerializerInterface::class);
+        $serializer = $this->createStub(SerializerInterface::class);
         $serializer
             ->method('encode')
             ->willReturnCallback(function (Envelope $encodedEnvelope) use ($envelope) {
