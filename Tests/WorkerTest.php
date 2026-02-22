@@ -513,8 +513,6 @@ class WorkerTest extends TestCase
 
     public function testFlushBatchOnIdle()
     {
-        ClockMock::withClockMock(false);
-
         $expectedMessages = [
             new DummyMessage('Hey'),
         ];
@@ -526,25 +524,26 @@ class WorkerTest extends TestCase
 
         $handler = new DummyBatchHandler();
 
+        $clock = new MockClock();
         $middleware = new HandleMessageMiddleware(new HandlersLocator([
             DummyMessage::class => [new HandlerDescriptor($handler)],
-        ]));
+        ]), clock: $clock);
 
         $bus = new MessageBus([$middleware]);
 
         $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver) {
+        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver, $clock) {
             static $i = 0;
             if (1 < ++$i) {
                 $event->getWorker()->stop();
                 $this->assertSame(1, $receiver->getAcknowledgeCount());
             } else {
                 $this->assertSame(0, $receiver->getAcknowledgeCount());
-                sleep(1);
+                $clock->sleep(1);
             }
         });
 
-        $worker = new Worker([$receiver], $bus, $dispatcher, clock: new MockClock());
+        $worker = new Worker([$receiver], $bus, $dispatcher, clock: $clock);
         $worker->run();
 
         $this->assertSame($expectedMessages, $handler->processedMessages);
@@ -552,8 +551,6 @@ class WorkerTest extends TestCase
 
     public function testFlushBatchWithIdleTimeout()
     {
-        ClockMock::withClockMock(false);
-
         $expectedMessages = [
             new DummyMessage('Hey'),
             new DummyMessage('Bob'),
@@ -570,25 +567,26 @@ class WorkerTest extends TestCase
 
         $handler = new DummyBatchHandler(batchSize: 5, idleTimeout: 3);
 
+        $clock = new MockClock();
         $middleware = new HandleMessageMiddleware(new HandlersLocator([
             DummyMessage::class => [new HandlerDescriptor($handler)],
-        ]));
+        ]), clock: $clock);
 
         $bus = new MessageBus([$middleware]);
 
         $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver) {
+        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver, $clock) {
             static $i = 0;
             if (6 < ++$i) { // 6 seconds = 4 messages + 3 idle timeout - 1 sec that overlaps (last message)
                 $this->assertSame(4, $receiver->getAcknowledgeCount());
                 $event->getWorker()->stop();
             } else {
                 $this->assertSame(0, $receiver->getAcknowledgeCount());
-                sleep(1);
+                $clock->sleep(1);
             }
         });
 
-        $worker = new Worker([$receiver], $bus, $dispatcher, clock: new MockClock());
+        $worker = new Worker([$receiver], $bus, $dispatcher, clock: $clock);
         $worker->run();
 
         $this->assertSame($expectedMessages, $handler->processedMessages);
@@ -596,8 +594,6 @@ class WorkerTest extends TestCase
 
     public function testFlushBatchWithoutIdleTimeout()
     {
-        ClockMock::withClockMock(false);
-
         $expectedMessages = [
             new DummyMessage('Hey'),
         ];
@@ -609,23 +605,24 @@ class WorkerTest extends TestCase
 
         $handler = new DummyBatchHandler(idleTimeout: null);
 
+        $clock = new MockClock();
         $middleware = new HandleMessageMiddleware(new HandlersLocator([
             DummyMessage::class => [new HandlerDescriptor($handler)],
-        ]));
+        ]), clock: $clock);
 
         $bus = new MessageBus([$middleware]);
 
         $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver) {
+        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver, $clock) {
             static $i = 0;
             if (2 < ++$i) {
                 $event->getWorker()->stop();
             }
             $this->assertSame(0, $receiver->getAcknowledgeCount());
-            sleep(1);
+            $clock->sleep(1);
         });
 
-        $worker = new Worker([$receiver], $bus, $dispatcher, clock: new MockClock());
+        $worker = new Worker([$receiver], $bus, $dispatcher, clock: $clock);
         $worker->run();
 
         $this->assertSame(1, $receiver->getAcknowledgeCount());
