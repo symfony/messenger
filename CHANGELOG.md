@@ -12,6 +12,7 @@ CHANGELOG
  * Add a `--fetch-size` option to the `messenger:consume` command to control how many messages are fetched per iteration
  * Add `MessageExecutionStrategyInterface` and `SyncMessageExecutionStrategy` to decouple message execution from the `Worker`
  * Allow configuring the service reset interval in the `messenger:consume` command via the `--no-reset` option
+ * Add `AmqpPriorityStamp` to set per-message priority on the AMQP transport
 
 8.0
 ---
