@@ -45,7 +45,7 @@ class Worker
     private bool $shouldStop = false;
     private WorkerMetadata $metadata;
     private array $acks = [];
-    private \SplObjectStorage $unacks;
+    private ?\SplObjectStorage $unacks = null;
 
     /**
      * @param ReceiverInterface[] $receivers Where the key is the transport name
@@ -61,7 +61,6 @@ class Worker
         $this->metadata = new WorkerMetadata([
             'transportNames' => array_keys($receivers),
         ]);
-        $this->unacks = new \SplObjectStorage();
     }
 
     /**
@@ -125,7 +124,7 @@ class Worker
                 continue;
             }
 
-            if (!$envelopeHandled) {
+            if (!$this->flush(30.0) && !$envelopeHandled) {
                 $this->eventDispatcher?->dispatch(new WorkerRunningEvent($this, true));
 
                 if (0 < $sleep = (int) ($options['sleep'] - 1e6 * ($this->clock->now()->format('U.u') - $envelopeHandledStart->format('U.u')))) {
@@ -165,7 +164,8 @@ class Worker
         if (!$acked && !$noAutoAckStamp) {
             $this->acks[] = [$transportName, $envelope, $e];
         } elseif ($noAutoAckStamp) {
-            $this->unacks[$noAutoAckStamp->getHandlerDescriptor()->getBatchHandler()] = [$envelope->withoutAll(AckStamp::class), $transportName];
+            $this->unacks ??= new \SplObjectStorage();
+            $this->unacks[$noAutoAckStamp->getHandlerDescriptor()->getBatchHandler()] = [$envelope->withoutAll(AckStamp::class), $transportName, $this->clock->now()->format('U.u')];
         }
 
         $this->ack();
@@ -243,18 +243,38 @@ class Worker
         $rateLimiter->consume();
     }
 
-    private function flush(bool $force): bool
+    private function flush(bool|float $force): bool
     {
-        $unacks = $this->unacks;
+        if (!$this->unacks) {
+            return false;
+        }
+
+        if (\is_bool($force)) {
+            $unacks = $this->unacks;
+            $this->unacks = null;
+        } else {
+            $now = $this->clock->now()->format('U.u');
+            $remaining = new \SplObjectStorage();
+            $unacks = new \SplObjectStorage();
+
+            foreach ($this->unacks as $handler) {
+                if ($force <= $now - $this->unacks[$handler][2]) {
+                    $unacks[$handler] = $this->unacks[$handler];
+                } else {
+                    $remaining[$handler] = $this->unacks[$handler];
+                }
+            }
+
+            $this->unacks = $remaining->count() ? $remaining : null;
+            $force = true;
+        }
 
         if (!$unacks->count()) {
             return false;
         }
 
-        $this->unacks = new \SplObjectStorage();
-
-        foreach ($unacks as $batchHandler) {
-            [$envelope, $transportName] = $unacks[$batchHandler];
+        foreach ($unacks as $handler) {
+            [$envelope, $transportName] = $unacks[$handler];
             try {
                 $this->bus->dispatch($envelope->with(new FlushBatchHandlersStamp($force)));
             } catch (\Throwable $e) {

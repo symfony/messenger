@@ -518,6 +518,7 @@ class WorkerTest extends TestCase
         $receiver = new DummyReceiver([
             [new Envelope($expectedMessages[0])],
             [],
+            [],
         ]);
 
         $handler = new DummyBatchHandler();
@@ -527,19 +528,21 @@ class WorkerTest extends TestCase
         ]));
 
         $bus = new MessageBus([$middleware]);
+        $clock = new MockClock();
 
         $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver) {
+        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) use ($receiver, $clock) {
             static $i = 0;
-            if (1 < ++$i) {
+            if (1 === ++$i) {
+                $this->assertSame(0, $receiver->getAcknowledgeCount());
+                $clock->sleep(30);
+            } elseif (2 === $i) {
                 $event->getWorker()->stop();
                 $this->assertSame(1, $receiver->getAcknowledgeCount());
-            } else {
-                $this->assertSame(0, $receiver->getAcknowledgeCount());
             }
         });
 
-        $worker = new Worker([$receiver], $bus, $dispatcher, clock: new MockClock());
+        $worker = new Worker([$receiver], $bus, $dispatcher, clock: $clock);
         $worker->run();
 
         $this->assertSame($expectedMessages, $handler->processedMessages);
@@ -621,6 +624,54 @@ class WorkerTest extends TestCase
         $this->assertSame($secondHandlerExpectedMessages, $secondHandler->processedMessages);
     }
 
+    public function testBatchFlushOnInactivityWhileWorkerIsBusy()
+    {
+        $batchHandler = new LargeBatchHandler();
+
+        $middleware = new HandleMessageMiddleware(new HandlersLocator([
+            DummyMessage::class => [new HandlerDescriptor($batchHandler)],
+            SecondHandlerDummyMessage::class => [new HandlerDescriptor(function (SecondHandlerDummyMessage $message) {})],
+        ]));
+
+        $bus = new MessageBus([$middleware]);
+        $clock = new MockClock('2024-01-01 00:00:00+00:00');
+
+        // 1 batch message, then 34 non-batch messages keeping the worker busy.
+        // The batch handler requires 100 messages to flush on its own,
+        // so shouldFlush() never triggers. The worker is never idle either.
+        $envelopes = [[new Envelope(new DummyMessage('batch'))]];
+        for ($i = 0; $i < 34; ++$i) {
+            $envelopes[] = [new Envelope(new SecondHandlerDummyMessage('regular'.$i))];
+        }
+        $receiver = new DummyReceiver($envelopes);
+
+        $loopCount = 0;
+        $flushedAtLoop = null;
+        $dispatcher = new EventDispatcher();
+        $dispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event) use ($clock, &$loopCount, &$flushedAtLoop, $batchHandler) {
+            ++$loopCount;
+            $clock->sleep(1);
+
+            if ($batchHandler->processedMessages) {
+                $flushedAtLoop ??= $loopCount;
+            }
+
+            if (43 <= $loopCount) {
+                $event->getWorker()->stop();
+            }
+        });
+
+        $worker = new Worker(['transport' => $receiver], $bus, $dispatcher, clock: $clock);
+        $worker->run();
+
+        // The batch message was received at t=0, then only non-batch messages arrived.
+        // After 30s of batch inactivity, the worker should force-flush.
+        $this->assertNotNull($flushedAtLoop, 'Batch should have been flushed after inactivity timeout');
+        $this->assertGreaterThanOrEqual(30, $flushedAtLoop);
+        $this->assertLessThanOrEqual(33, $flushedAtLoop);
+        $this->assertSame(['batch'], array_map(static fn ($m) => $m->getMessage(), $batchHandler->processedMessages));
+    }
+
     public function testFlushRemovesNoAutoAckStampOnException()
     {
         $envelope = new Envelope(new DummyMessage('Test'));
@@ -648,12 +699,11 @@ class WorkerTest extends TestCase
 
         $worker = new Worker(['transport' => $receiver], $bus, $dispatcher, clock: new MockClock());
 
-        $reflection = new \ReflectionClass($worker);
-        $unacksProperty = $reflection->getProperty('unacks');
-        $unacks = $unacksProperty->getValue($worker);
         $dummyHandler = new DummyBatchHandler();
         $envelopeWithNoAutoAck = $envelope->with(new NoAutoAckStamp(new HandlerDescriptor($dummyHandler)));
-        $unacks[$dummyHandler] = [$envelopeWithNoAutoAck, 'transport'];
+        $unacks = new \SplObjectStorage();
+        $unacks[$dummyHandler] = [$envelopeWithNoAutoAck, 'transport', 0];
+        (new \ReflectionProperty($worker, 'unacks'))->setValue($worker, $unacks);
 
         $worker->run();
 
@@ -718,6 +768,32 @@ class SecondDummyBatchHandler implements BatchHandlerInterface
     private function process(array $jobs): void
     {
         $this->processedMessages = array_column($jobs, 0);
+
+        foreach ($jobs as [$job, $ack]) {
+            $ack->ack($job);
+        }
+    }
+}
+
+class LargeBatchHandler implements BatchHandlerInterface
+{
+    use BatchHandlerTrait;
+
+    public array $processedMessages = [];
+
+    public function __invoke(DummyMessage $message, ?Acknowledger $ack = null)
+    {
+        return $this->handle($message, $ack);
+    }
+
+    private function shouldFlush(): bool
+    {
+        return 100 <= \count($this->jobs);
+    }
+
+    private function process(array $jobs): void
+    {
+        $this->processedMessages = array_merge($this->processedMessages, array_column($jobs, 0));
 
         foreach ($jobs as [$job, $ack]) {
             $ack->ack($job);
