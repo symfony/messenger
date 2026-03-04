@@ -11,8 +11,8 @@
 
 namespace Symfony\Component\Messenger\Handler;
 
-use Psr\Clock\ClockInterface;
 use Symfony\Component\Clock\Clock;
+use Symfony\Component\Clock\ClockInterface;
 
 /**
  * @author Nicolas Grekas <p@tchwork.com>
