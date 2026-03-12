@@ -39,11 +39,13 @@ interface ReceiverInterface
      * an Envelope containing a MessageDecodingFailedException so the worker
      * can route it through the usual failure handling path.
      *
+     * @param int $fetchSize Best-effort hint about how many messages can be received in one call
+     *
      * @return iterable<Envelope>
      *
      * @throws TransportException If there is an issue communicating with the transport
      */
-    public function get(): iterable;
+    public function get(/* int $fetchSize = 1 */): iterable;
 
     /**
      * Acknowledges that the passed message was handled.

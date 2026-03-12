@@ -373,21 +373,47 @@ class WorkerTest extends TestCase
     public function testWorkerLimitQueues()
     {
         $envelope = [new Envelope(new DummyMessage('message1'))];
-        $receiver = $this->createMock(QueueReceiverInterface::class);
-        $receiver->expects($this->once())
-            ->method('getFromQueues')
-            ->with(['foo'])
-            ->willReturn($envelope)
-        ;
-        $receiver->expects($this->never())
-            ->method('get')
-        ;
+        $receiver = new DummyQueueReceiver([$envelope]);
 
         $dispatcher = new EventDispatcher();
         $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
 
         $worker = new Worker(['transport' => $receiver], new MessageBus(), $dispatcher, clock: new MockClock());
         $worker->run(['queues' => ['foo']]);
+
+        $this->assertSame([['foo']], $receiver->queueNames);
+        $this->assertSame([1], $receiver->getFromQueuesFetchSizes);
+    }
+
+    public function testWorkerPassesFetchSizeToReceiver()
+    {
+        $receiver = new DummyReceiver([
+            [new Envelope(new DummyMessage('message1'))],
+        ]);
+
+        $dispatcher = new EventDispatcher();
+        $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
+
+        $worker = new Worker(['transport' => $receiver], new MessageBus(), $dispatcher, clock: new MockClock());
+        $worker->run(['fetch_size' => 7]);
+
+        $this->assertSame([7], $receiver->getFetchSizes());
+    }
+
+    public function testWorkerPassesFetchSizeToQueueReceiver()
+    {
+        $receiver = new DummyQueueReceiver([
+            [new Envelope(new DummyMessage('message1'))],
+        ]);
+
+        $dispatcher = new EventDispatcher();
+        $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
+
+        $worker = new Worker(['transport' => $receiver], new MessageBus(), $dispatcher, clock: new MockClock());
+        $worker->run(['queues' => ['foo'], 'fetch_size' => 7]);
+
+        $this->assertSame([['foo']], $receiver->queueNames);
+        $this->assertSame([7], $receiver->getFromQueuesFetchSizes);
     }
 
     public function testWorkerLimitQueuesUnsupported()
@@ -717,7 +743,7 @@ class WorkerTest extends TestCase
 
         $middleware = new HandleMessageMiddleware(new HandlersLocator([
             DummyMessage::class => [new HandlerDescriptor($batchHandler)],
-            SecondHandlerDummyMessage::class => [new HandlerDescriptor(function (SecondHandlerDummyMessage $message) {})],
+            SecondHandlerDummyMessage::class => [new HandlerDescriptor(static function (SecondHandlerDummyMessage $message) {})],
         ]));
 
         $bus = new MessageBus([$middleware]);
@@ -924,9 +950,18 @@ class WorkerTest extends TestCase
 
 class DummyQueueReceiver extends DummyReceiver implements QueueReceiverInterface
 {
-    public function getFromQueues(array $queueNames): iterable
+    public array $queueNames = [];
+    public array $getFromQueuesFetchSizes = [];
+
+    /**
+     * @param int $fetchSize
+     */
+    public function getFromQueues(array $queueNames/* , int $fetchSize = 1 */): iterable
     {
-        return $this->get();
+        $this->queueNames[] = $queueNames;
+        $this->getFromQueuesFetchSizes[] = 1 < \func_num_args() ? func_get_arg(1) : 1;
+
+        return $this->get(...\func_num_args() > 1 ? [func_get_arg(1)] : []);
     }
 }
 

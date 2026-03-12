@@ -78,6 +78,7 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
                 new InputOption('all', null, InputOption::VALUE_NONE, 'Consume messages from all receivers'),
                 new InputOption('exclude-receivers', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Exclude specific receivers/transports from consumption (can only be used with --all)'),
                 new InputOption('keepalive', null, InputOption::VALUE_OPTIONAL, 'Whether to use the transport\'s keepalive mechanism if implemented', self::DEFAULT_KEEPALIVE_INTERVAL),
+                new InputOption('fetch-size', null, InputOption::VALUE_REQUIRED, 'The number of messages to fetch per call to the transport', 1),
             ])
             ->setHelp(<<<'EOF'
                 The <info>%command.name%</info> command consumes messages and dispatches them to the message bus.
@@ -132,6 +133,10 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
                 Use the <info>--exclude-receivers</info> option to exclude specific receivers/transports from consumption (can only be used with <info>--all</info>):
 
                     <info>php %command.full_name% --all --exclude-receivers=<receiver-name></info>
+
+                Use the <info>--fetch-size</info> option to control how many messages are fetched per call to the transport:
+
+                    <info>php %command.full_name% <receiver-name> --fetch-size=8</info>
                 EOF
             )
         ;
@@ -295,6 +300,12 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
         if ($queues = $input->getOption('queues')) {
             $options['queues'] = $queues;
         }
+
+        if (1 < $fetchSize = (int) $input->getOption('fetch-size')) {
+            throw new \InvalidArgumentException(\sprintf('The "--fetch-size" option must be a positive integer, "%s" given.', $input->getOption('fetch-size')));
+        }
+
+        $options['fetch_size'] = $fetchSize;
 
         try {
             $this->worker->run($options);

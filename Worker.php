@@ -100,11 +100,14 @@ class Worker
         while (!$this->shouldStop) {
             $envelopeHandled = false;
             $envelopeHandledStart = $this->clock->now();
+            $fetchSize = max(1, $options['fetch_size'] ?? 1);
+
             foreach ($this->receivers as $transportName => $receiver) {
                 if ($queueNames) {
-                    $envelopes = $receiver->getFromQueues($queueNames);
+                    /** @var QueueReceiverInterface $receiver */
+                    $envelopes = $receiver->getFromQueues($queueNames, $fetchSize);
                 } else {
-                    $envelopes = $receiver->get();
+                    $envelopes = $receiver->get($fetchSize);
                 }
 
                 foreach ($envelopes as $envelope) {

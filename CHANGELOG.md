@@ -8,6 +8,8 @@ CHANGELOG
  * Receivers no longer delete messages on decode failure; they are routed through the normal retry/failure transport path
  * Add regex support for transport name patterns in the `messenger:consume` command
  * Add an idle timeout option to the `BatchHandlerTrait`
+ * Add argument `$fetchSize` to `ReceiverInterface::get()` and `QueueReceiverInterface::getFromQueues()`, and to all bridges
+ * Add a `--fetch-size` option to the `messenger:consume` command to control how many messages are fetched per iteration
 
 8.0
 ---
