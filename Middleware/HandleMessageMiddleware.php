@@ -137,6 +137,9 @@ class HandleMessageMiddleware implements MiddlewareInterface
         return false;
     }
 
+    /**
+     * @param-immediately-invoked-callable $handler
+     */
     private function callHandler(\Closure $handler, object $message, ?Acknowledger $ack, ?HandlerArgumentsStamp $handlerArgumentsStamp): mixed
     {
         $arguments = [$message];
