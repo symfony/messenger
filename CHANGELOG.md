@@ -11,6 +11,7 @@ CHANGELOG
  * Add argument `$fetchSize` to `ReceiverInterface::get()` and `QueueReceiverInterface::getFromQueues()`, and to all bridges
  * Add a `--fetch-size` option to the `messenger:consume` command to control how many messages are fetched per iteration
  * Add `MessageExecutionStrategyInterface` and `SyncMessageExecutionStrategy` to decouple message execution from the `Worker`
+ * Allow configuring the service reset interval in the `messenger:consume` command via the `--no-reset` option
 
 8.0
 ---

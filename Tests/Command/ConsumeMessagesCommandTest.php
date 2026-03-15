@@ -173,6 +173,7 @@ class ConsumeMessagesCommandTest extends TestCase
 
         yield 'Zero second time limit' => ['--time-limit', '0', 'Option "time-limit" must be a positive integer, "0" passed.'];
         yield 'Non-numeric time limit' => ['--time-limit', 'whatever', 'Option "time-limit" must be a positive integer, "whatever" passed.'];
+        yield 'Negative reset interval' => ['--no-reset', '-1', 'Option "no-reset" must be a positive integer, "-1" passed.'];
     }
 
     public function testRunWithTimeLimit()

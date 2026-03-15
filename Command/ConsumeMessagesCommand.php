@@ -74,7 +74,7 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
                 new InputOption('sleep', null, InputOption::VALUE_REQUIRED, 'Seconds to sleep before asking for new messages after no messages were found', 1),
                 new InputOption('bus', 'b', InputOption::VALUE_REQUIRED, 'Name of the bus to which received messages should be dispatched (if not passed, bus is determined automatically)'),
                 new InputOption('queues', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Limit receivers to only consume from the specified queues'),
-                new InputOption('no-reset', null, InputOption::VALUE_NONE, 'Do not reset container services after each message'),
+                new InputOption('no-reset', null, InputOption::VALUE_OPTIONAL, 'Do not reset container services after each message, or pass a number to reset every N messages', false),
                 new InputOption('all', null, InputOption::VALUE_NONE, 'Consume messages from all receivers'),
                 new InputOption('exclude-receivers', null, InputOption::VALUE_REQUIRED | InputOption::VALUE_IS_ARRAY, 'Exclude specific receivers/transports from consumption (can only be used with --all)'),
                 new InputOption('keepalive', null, InputOption::VALUE_OPTIONAL, 'Whether to use the transport\'s keepalive mechanism if implemented', self::DEFAULT_KEEPALIVE_INTERVAL),
@@ -237,7 +237,18 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
             }
         }
 
-        if (null !== $this->resetServicesListener && !$input->getOption('no-reset')) {
+        $resetInterval = match ($resetInterval = $input->getOption('no-reset')) {
+            false => 1,
+            null => 0,
+            default => filter_var($resetInterval, \FILTER_VALIDATE_INT, \FILTER_NULL_ON_FAILURE),
+        };
+
+        if (0 > ($resetInterval ?? -1)) {
+            throw new InvalidOptionException(\sprintf('Option "no-reset" must be a positive integer, "%s" passed.', $input->getOption('no-reset')));
+        }
+
+        $this->resetServicesListener?->setInterval($resetInterval > 0 ? $resetInterval : 1);
+        if ($this->resetServicesListener && $resetInterval > 0) {
             $this->eventDispatcher->addSubscriber($this->resetServicesListener);
         }
 

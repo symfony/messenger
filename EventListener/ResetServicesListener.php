@@ -21,14 +21,22 @@ use Symfony\Component\Messenger\Event\WorkerStoppedEvent;
  */
 class ResetServicesListener implements EventSubscriberInterface
 {
+    private int $interval = 1;
+    private int $count = 0;
+
     public function __construct(
         private ServicesResetterInterface $servicesResetter,
     ) {
     }
 
+    public function setInterval(int $interval): void
+    {
+        $this->interval = $interval;
+    }
+
     public function resetServices(WorkerRunningEvent $event): void
     {
-        if (!$event->isWorkerIdle()) {
+        if (!$event->isWorkerIdle() && 0 === ++$this->count % $this->interval) {
             $this->servicesResetter->reset();
         }
     }
