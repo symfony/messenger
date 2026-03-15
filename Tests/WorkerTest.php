@@ -32,6 +32,7 @@ use Symfony\Component\Messenger\EventListener\ResetMemoryUsageListener;
 use Symfony\Component\Messenger\EventListener\ResetServicesListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMessageLimitListener;
 use Symfony\Component\Messenger\Exception\RuntimeException;
+use Symfony\Component\Messenger\Execution\DeferredBatchMessageQueue;
 use Symfony\Component\Messenger\Handler\Acknowledger;
 use Symfony\Component\Messenger\Handler\BatchHandlerInterface;
 use Symfony\Component\Messenger\Handler\BatchHandlerTrait;
@@ -814,8 +815,9 @@ class WorkerTest extends TestCase
 
         $dummyHandler = new DummyBatchHandler();
         $envelopeWithNoAutoAck = $envelope->with(new NoAutoAckStamp(new HandlerDescriptor($dummyHandler)));
-        $unacks = new \SplObjectStorage();
-        $unacks[$dummyHandler] = [$envelopeWithNoAutoAck, 'transport', false, 0];
+        $unacks = new DeferredBatchMessageQueue();
+        $acked = false;
+        $unacks->add($dummyHandler, 'transport', $envelopeWithNoAutoAck, $acked, 0.0);
         (new \ReflectionProperty($worker, 'unacks'))->setValue($worker, $unacks);
 
         $worker->run();

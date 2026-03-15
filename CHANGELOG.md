@@ -10,6 +10,7 @@ CHANGELOG
  * Add an idle timeout option to the `BatchHandlerTrait`
  * Add argument `$fetchSize` to `ReceiverInterface::get()` and `QueueReceiverInterface::getFromQueues()`, and to all bridges
  * Add a `--fetch-size` option to the `messenger:consume` command to control how many messages are fetched per iteration
+ * Add `MessageExecutionStrategyInterface` and `SyncMessageExecutionStrategy` to decouple message execution from the `Worker`
 
 8.0
 ---
