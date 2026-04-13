@@ -127,6 +127,7 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
                 Use the <info>--exclude-receivers</info> option to exclude specific receivers/transports from consumption (can only be used with <info>--all</info>):
 
                     <info>php %command.full_name% --all --exclude-receivers=<receiver-name></info>
+
                 EOF
             )
         ;
