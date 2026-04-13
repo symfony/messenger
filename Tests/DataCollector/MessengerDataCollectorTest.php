@@ -120,8 +120,9 @@ class MessengerDataCollectorTest extends TestCase
                 "value" => RuntimeException %A
               ]
             ]
-            DUMP
-            , $this->getDataAsString($messages[0]));
+            DUMP,
+            $this->getDataAsString($messages[0])
+        );
     }
 
     public function testKeepsOrderedDispatchCalls()

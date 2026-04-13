@@ -77,8 +77,7 @@ class FailedMessagesShowCommandTest extends TestCase
               Error Code    123                  
               Error Class   Exception            
               Transport     async
-            EOF
-            ,
+            EOF,
             $redeliveryStamp->getRedeliveredAt()->format('Y-m-d H:i:s')),
             $tester->getDisplay(true));
     }
@@ -116,8 +115,7 @@ class FailedMessagesShowCommandTest extends TestCase
               Error Code    123                  
               Error Class   Exception            
               Transport     async
-            EOF
-            ,
+            EOF,
             $redeliveryStamp2->getRedeliveredAt()->format('Y-m-d H:i:s')),
             $tester->getDisplay(true));
     }
@@ -167,8 +165,7 @@ class FailedMessagesShowCommandTest extends TestCase
 
         $this->assertStringContainsString(sprintf(<<<EOF
             15   stdClass   %s   Things are bad!
-            EOF
-            ,
+            EOF,
             $redeliveryStamp->getRedeliveredAt()->format('Y-m-d H:i:s')),
             $tester->getDisplay(true));
 
@@ -317,8 +314,7 @@ class FailedMessagesShowCommandTest extends TestCase
               line: %d
               trace: {
             %%A
-            EOF
-            ,
+            EOF,
             __FILE__, $exceptionLine),
             $tester->getDisplay(true));
     }
@@ -348,8 +344,7 @@ class FailedMessagesShowCommandTest extends TestCase
         $tester->execute(['--transport' => $failureTransportName]);
         $this->assertStringContainsString(sprintf(<<<EOF
             15   stdClass   %s   Things are bad!
-            EOF
-            ,
+            EOF,
             $redeliveryStamp->getRedeliveredAt()->format('Y-m-d H:i:s')),
             $tester->getDisplay(true));
     }
