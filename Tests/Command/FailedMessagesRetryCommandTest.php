@@ -91,8 +91,8 @@ class FailedMessagesRetryCommandTest extends TestCase
         $tester->execute(['--force' => true]);
 
         $expectedLadingMessage = <<<EOF
-> Available failure transports are: failure_receiver, failure_receiver_2, failure_receiver_3
-EOF;
+            > Available failure transports are: failure_receiver, failure_receiver_2, failure_receiver_3
+            EOF;
         $this->assertStringContainsString($expectedLadingMessage, $tester->getDisplay());
     }
 

@@ -45,14 +45,14 @@ class StatsCommand extends Command
         $this
             ->addArgument('transport_names', InputArgument::IS_ARRAY | InputArgument::OPTIONAL, 'List of transports\' names')
             ->setHelp(<<<EOF
-The <info>%command.name%</info> command counts the messages for all the transports:
+                The <info>%command.name%</info> command counts the messages for all the transports:
 
-    <info>php %command.full_name%</info>
+                    <info>php %command.full_name%</info>
 
-Or specific transports only:
+                Or specific transports only:
 
-    <info>php %command.full_name% <transportNames></info>
-EOF
+                    <info>php %command.full_name% <transportNames></info>
+                EOF
             )
         ;
     }

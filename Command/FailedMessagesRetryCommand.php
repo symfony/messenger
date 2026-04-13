@@ -65,23 +65,23 @@ class FailedMessagesRetryCommand extends AbstractFailedMessagesCommand implement
                 new InputOption('transport', null, InputOption::VALUE_REQUIRED, 'Use a specific failure transport', self::DEFAULT_TRANSPORT_OPTION),
             ])
             ->setHelp(<<<'EOF'
-The <info>%command.name%</info> retries message in the failure transport.
+                The <info>%command.name%</info> retries message in the failure transport.
 
-    <info>php %command.full_name%</info>
+                    <info>php %command.full_name%</info>
 
-The command will interactively ask if each message should be retried
-or discarded.
+                The command will interactively ask if each message should be retried
+                or discarded.
 
-Some transports support retrying a specific message id, which comes
-from the <info>messenger:failed:show</info> command.
+                Some transports support retrying a specific message id, which comes
+                from the <info>messenger:failed:show</info> command.
 
-    <info>php %command.full_name% {id}</info>
+                    <info>php %command.full_name% {id}</info>
 
-Or pass multiple ids at once to process multiple messages:
+                Or pass multiple ids at once to process multiple messages:
 
-<info>php %command.full_name% {id1} {id2} {id3}</info>
+                <info>php %command.full_name% {id1} {id2} {id3}</info>
 
-EOF
+                EOF
             )
         ;
     }
