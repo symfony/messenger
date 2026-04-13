@@ -349,7 +349,6 @@ class FailedMessagesShowCommandTest extends TestCase
             $tester->getDisplay(true));
     }
 
-
     public function testCompletingTransport()
     {
         $globalFailureReceiverName = 'failure_receiver';
