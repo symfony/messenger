@@ -56,8 +56,8 @@ class FailureIntegrationTest extends TestCase
         $transport2 = new DummyFailureTestSenderAndReceiver();
         $failureTransport = new DummyFailureTestSenderAndReceiver();
         $sendersLocatorFailureTransport = new ServiceLocator([
-            'transport1' => fn () => $failureTransport,
-            'transport2' => fn () => $failureTransport,
+            'transport1' => static fn () => $failureTransport,
+            'transport2' => static fn () => $failureTransport,
         ]);
 
         $transports = [
@@ -72,7 +72,7 @@ class FailureIntegrationTest extends TestCase
             ->willReturn(true);
         $locator->expects($this->any())
             ->method('get')
-            ->willReturnCallback(fn ($transportName) => $transports[$transportName]);
+            ->willReturnCallback(static fn ($transportName) => $transports[$transportName]);
         $senderLocator = new SendersLocator(
             [DummyMessage::class => ['transport1', 'transport2']],
             $locator
@@ -118,9 +118,9 @@ class FailureIntegrationTest extends TestCase
         $dispatcher->addSubscriber(new SendFailedMessageToFailureTransportListener($sendersLocatorFailureTransport));
         $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
 
-        $runWorker = function (string $transportName) use ($transports, $bus, $dispatcher): ?\Throwable {
+        $runWorker = static function (string $transportName) use ($transports, $bus, $dispatcher): ?\Throwable {
             $throwable = null;
-            $failedListener = function (WorkerMessageFailedEvent $event) use (&$throwable) {
+            $failedListener = static function (WorkerMessageFailedEvent $event) use (&$throwable) {
                 $throwable = $event->getThrowable();
             };
             $dispatcher->addListener(WorkerMessageFailedEvent::class, $failedListener);
@@ -241,8 +241,8 @@ class FailureIntegrationTest extends TestCase
         $failureTransport2 = new DummyFailureTestSenderAndReceiver();
 
         $sendersLocatorFailureTransport = new ServiceLocator([
-            'transport1' => fn () => $failureTransport1,
-            'transport2' => fn () => $failureTransport2,
+            'transport1' => static fn () => $failureTransport1,
+            'transport2' => static fn () => $failureTransport2,
         ]);
 
         $transports = [
@@ -258,7 +258,7 @@ class FailureIntegrationTest extends TestCase
             ->willReturn(true);
         $locator->expects($this->any())
             ->method('get')
-            ->willReturnCallback(fn ($transportName) => $transports[$transportName]);
+            ->willReturnCallback(static fn ($transportName) => $transports[$transportName]);
         $senderLocator = new SendersLocator(
             [DummyMessage::class => ['transport1', 'transport2']],
             $locator
@@ -301,9 +301,9 @@ class FailureIntegrationTest extends TestCase
         ));
         $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
 
-        $runWorker = function (string $transportName) use ($transports, $bus, $dispatcher): ?\Throwable {
+        $runWorker = static function (string $transportName) use ($transports, $bus, $dispatcher): ?\Throwable {
             $throwable = null;
-            $failedListener = function (WorkerMessageFailedEvent $event) use (&$throwable) {
+            $failedListener = static function (WorkerMessageFailedEvent $event) use (&$throwable) {
                 $throwable = $event->getThrowable();
             };
             $dispatcher->addListener(WorkerMessageFailedEvent::class, $failedListener);
@@ -379,7 +379,7 @@ class FailureIntegrationTest extends TestCase
             ->willReturn(true);
         $locator->expects($this->any())
             ->method('get')
-            ->willReturnCallback(fn ($transportName) => $transports[$transportName]);
+            ->willReturnCallback(static fn ($transportName) => $transports[$transportName]);
         $senderLocator = new SendersLocator([], $locator);
 
         $retryStrategyLocator = $this->createMock(ContainerInterface::class);
@@ -400,7 +400,7 @@ class FailureIntegrationTest extends TestCase
 
         $bus = new MessageBus($middlewareStack);
 
-        $transport1Handler = fn () => $bus->dispatch(new \stdClass(), [new DispatchAfterCurrentBusStamp()]);
+        $transport1Handler = static fn () => $bus->dispatch(new \stdClass(), [new DispatchAfterCurrentBusStamp()]);
 
         $handlerLocator = new HandlersLocator([
             DummyMessage::class => [new HandlerDescriptor($transport1Handler)],
@@ -414,9 +414,9 @@ class FailureIntegrationTest extends TestCase
         $dispatcher->addSubscriber(new SendFailedMessageForRetryListener($locator, $retryStrategyLocator));
         $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
 
-        $runWorker = function (string $transportName) use ($transports, $bus, $dispatcher): ?\Throwable {
+        $runWorker = static function (string $transportName) use ($transports, $bus, $dispatcher): ?\Throwable {
             $throwable = null;
-            $failedListener = function (WorkerMessageFailedEvent $event) use (&$throwable) {
+            $failedListener = static function (WorkerMessageFailedEvent $event) use (&$throwable) {
                 $throwable = $event->getThrowable();
             };
             $dispatcher->addListener(WorkerMessageFailedEvent::class, $failedListener);
@@ -460,7 +460,7 @@ class FailureIntegrationTest extends TestCase
             ->willReturn(true);
         $locator->expects($this->any())
             ->method('get')
-            ->willReturnCallback(fn ($transportName) => $transports[$transportName]);
+            ->willReturnCallback(static fn ($transportName) => $transports[$transportName]);
         $senderLocator = new SendersLocator([], $locator);
 
         $retryStrategyLocator = $this->createMock(ContainerInterface::class);
@@ -483,7 +483,7 @@ class FailureIntegrationTest extends TestCase
 
         $bus = new MessageBus($middlewareStack);
 
-        $transport1Handler = fn () => $bus->dispatch(new \stdClass(), [new DispatchAfterCurrentBusStamp()]);
+        $transport1Handler = static fn () => $bus->dispatch(new \stdClass(), [new DispatchAfterCurrentBusStamp()]);
 
         $handlerLocator = new HandlersLocator([
             DummyMessage::class => [new HandlerDescriptor($transport1Handler)],
@@ -496,9 +496,9 @@ class FailureIntegrationTest extends TestCase
         $dispatcher->addSubscriber(new SendFailedMessageForRetryListener($locator, $retryStrategyLocator));
         $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(1));
 
-        $runWorker = function (string $transportName) use ($transports, $bus, $dispatcher): ?\Throwable {
+        $runWorker = static function (string $transportName) use ($transports, $bus, $dispatcher): ?\Throwable {
             $throwable = null;
-            $failedListener = function (WorkerMessageFailedEvent $event) use (&$throwable) {
+            $failedListener = static function (WorkerMessageFailedEvent $event) use (&$throwable) {
                 $throwable = $event->getThrowable();
             };
             $dispatcher->addListener(WorkerMessageFailedEvent::class, $failedListener);

@@ -41,7 +41,7 @@ class MessageBusTest extends TestCase
         $firstMiddleware->expects($this->once())
             ->method('handle')
             ->with($envelope, $this->anything())
-            ->willReturnCallback(fn ($envelope, $stack) => $stack->next()->handle($envelope, $stack));
+            ->willReturnCallback(static fn ($envelope, $stack) => $stack->next()->handle($envelope, $stack));
 
         $secondMiddleware = $this->createMock(MiddlewareInterface::class);
         $secondMiddleware->expects($this->once())
@@ -68,13 +68,13 @@ class MessageBusTest extends TestCase
         $firstMiddleware->expects($this->once())
             ->method('handle')
             ->with($envelope, $this->anything())
-            ->willReturnCallback(fn ($envelope, $stack) => $stack->next()->handle($envelope->with(new AnEnvelopeStamp()), $stack));
+            ->willReturnCallback(static fn ($envelope, $stack) => $stack->next()->handle($envelope->with(new AnEnvelopeStamp()), $stack));
 
         $secondMiddleware = $this->createMock(MiddlewareInterface::class);
         $secondMiddleware->expects($this->once())
             ->method('handle')
             ->with($envelopeWithAnotherStamp, $this->anything())
-            ->willReturnCallback(fn ($envelope, $stack) => $stack->next()->handle($envelope, $stack));
+            ->willReturnCallback(static fn ($envelope, $stack) => $stack->next()->handle($envelope, $stack));
 
         $thirdMiddleware = $this->createMock(MiddlewareInterface::class);
         $thirdMiddleware->expects($this->once())
@@ -104,7 +104,7 @@ class MessageBusTest extends TestCase
         $firstMiddleware->expects($this->once())
             ->method('handle')
             ->with($envelope, $this->anything())
-            ->willReturnCallback(fn ($envelope, $stack) => $stack->next()->handle($expectedEnvelope, $stack));
+            ->willReturnCallback(static fn ($envelope, $stack) => $stack->next()->handle($expectedEnvelope, $stack));
 
         $secondMiddleware = $this->createMock(MiddlewareInterface::class);
         $secondMiddleware->expects($this->once())
@@ -145,7 +145,7 @@ class MessageBusTest extends TestCase
             new SimpleMiddleware(),
         ]];
 
-        yield 'generator' => [(function (): \Generator {
+        yield 'generator' => [(static function (): \Generator {
             yield new SimpleMiddleware();
             yield new SimpleMiddleware();
         })()];

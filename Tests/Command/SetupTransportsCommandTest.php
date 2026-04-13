@@ -64,7 +64,7 @@ class SetupTransportsCommandTest extends TestCase
             ->method('setup')
             ->willThrowException(new \RuntimeException('Server not found'));
 
-        $command = new SetupTransportsCommand(new ServiceLocator(['amqp' => fn () => $amqpTransport]), ['amqp']);
+        $command = new SetupTransportsCommand(new ServiceLocator(['amqp' => static fn () => $amqpTransport]), ['amqp']);
         $tester = new CommandTester($command);
 
         $this->expectException(\RuntimeException::class);

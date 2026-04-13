@@ -76,10 +76,10 @@ class SendersLocatorTest extends TestCase
         $container = $this->createMock(ContainerInterface::class);
         $container->expects($this->any())
             ->method('has')
-            ->willReturnCallback(fn ($id) => isset($senders[$id]));
+            ->willReturnCallback(static fn ($id) => isset($senders[$id]));
         $container->expects($this->any())
             ->method('get')
-            ->willReturnCallback(fn ($id) => $senders[$id]);
+            ->willReturnCallback(static fn ($id) => $senders[$id]);
 
         return $container;
     }

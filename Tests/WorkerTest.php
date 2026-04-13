@@ -73,7 +73,7 @@ class WorkerTest extends TestCase
 
         $bus->expects($this->exactly(2))
             ->method('dispatch')
-            ->willReturnCallback(function ($envelope) use (&$envelopes) {
+            ->willReturnCallback(static function ($envelope) use (&$envelopes) {
                 return $envelopes[] = $envelope;
             });
 
@@ -146,7 +146,7 @@ class WorkerTest extends TestCase
 
         $dispatcher = new EventDispatcher();
         $dispatcher->addSubscriber(new ResetServicesListener(new ServicesResetter(new \ArrayIterator([$resettableReceiver]), ['reset'])));
-        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) {
+        $dispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event) {
             $event->getWorker()->stop();
         });
 
@@ -161,7 +161,7 @@ class WorkerTest extends TestCase
         $resettableReceiver = new ResettableDummyReceiver([[$envelope]]);
 
         $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) {
+        $dispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event) {
             $event->getWorker()->stop();
         });
 
@@ -180,7 +180,7 @@ class WorkerTest extends TestCase
         $bus->expects($this->never())->method('dispatch');
 
         $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) {
+        $dispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event) {
             $event->getWorker()->stop();
         });
 
@@ -208,7 +208,7 @@ class WorkerTest extends TestCase
 
         $eventDispatcher->expects($this->exactly(5))
             ->method('dispatch')
-            ->willReturnCallback(function ($event) use (&$series) {
+            ->willReturnCallback(static function ($event) use (&$series) {
                 array_shift($series)->evaluate($event);
 
                 if ($event instanceof WorkerRunningEvent) {
@@ -262,7 +262,7 @@ class WorkerTest extends TestCase
 
         $eventDispatcher->expects($this->exactly(5))
             ->method('dispatch')
-            ->willReturnCallback(function ($event) use (&$series) {
+            ->willReturnCallback(static function ($event) use (&$series) {
                 array_shift($series)->evaluate($event);
 
                 if ($event instanceof WorkerRunningEvent) {
@@ -285,7 +285,7 @@ class WorkerTest extends TestCase
         $bus->method('dispatch')->willReturn($envelope);
 
         $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) {
+        $dispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event) {
             $event->getWorker()->stop();
         });
 
@@ -358,7 +358,7 @@ class WorkerTest extends TestCase
         $processedEnvelopes = [];
         $dispatcher = new EventDispatcher();
         $dispatcher->addSubscriber(new StopWorkerOnMessageLimitListener(6));
-        $dispatcher->addListener(WorkerMessageReceivedEvent::class, function (WorkerMessageReceivedEvent $event) use (&$processedEnvelopes) {
+        $dispatcher->addListener(WorkerMessageReceivedEvent::class, static function (WorkerMessageReceivedEvent $event) use (&$processedEnvelopes) {
             $processedEnvelopes[] = $event->getEnvelope();
         });
         $worker = new Worker([$receiver1, $receiver2, $receiver3], new MessageBus(), $dispatcher, clock: new MockClock());
@@ -412,7 +412,7 @@ class WorkerTest extends TestCase
 
         $stamp = new class implements StampInterface {
         };
-        $listener = function (WorkerMessageReceivedEvent $event) use ($stamp) {
+        $listener = static function (WorkerMessageReceivedEvent $event) use ($stamp) {
             $event->addStamps($stamp);
         };
 
@@ -630,7 +630,7 @@ class WorkerTest extends TestCase
 
         $middleware = new HandleMessageMiddleware(new HandlersLocator([
             DummyMessage::class => [new HandlerDescriptor($batchHandler)],
-            SecondHandlerDummyMessage::class => [new HandlerDescriptor(function (SecondHandlerDummyMessage $message) {})],
+            SecondHandlerDummyMessage::class => [new HandlerDescriptor(static function (SecondHandlerDummyMessage $message) {})],
         ]));
 
         $bus = new MessageBus([$middleware]);
@@ -690,7 +690,7 @@ class WorkerTest extends TestCase
         };
 
         $dispatcher = new EventDispatcher();
-        $dispatcher->addListener(WorkerRunningEvent::class, function (WorkerRunningEvent $event) {
+        $dispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event) {
             static $calls = 0;
             if (++$calls >= 2) {
                 $event->getWorker()->stop();

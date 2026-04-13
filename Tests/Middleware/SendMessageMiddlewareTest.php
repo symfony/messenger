@@ -58,7 +58,7 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
 
         $sender->expects($this->once())
             ->method('send')
-            ->with($this->callback(function (Envelope $envelope) {
+            ->with($this->callback(static function (Envelope $envelope) {
                 $lastSentStamp = $envelope->last(SentStamp::class);
 
                 // last SentStamp should be the "foo" alias
@@ -67,7 +67,7 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
             ->willReturnArgument(0);
         $sender2->expects($this->once())
             ->method('send')
-            ->with($this->callback(function (Envelope $envelope) {
+            ->with($this->callback(static function (Envelope $envelope) {
                 $lastSentStamp = $envelope->last(SentStamp::class);
 
                 // last SentStamp should be the "bar" alias
@@ -232,10 +232,10 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
         $container = $this->createMock(ContainerInterface::class);
         $container->expects($this->any())
             ->method('has')
-            ->willReturnCallback(fn ($id) => isset($senders[$id]));
+            ->willReturnCallback(static fn ($id) => isset($senders[$id]));
         $container->expects($this->any())
             ->method('get')
-            ->willReturnCallback(fn ($id) => $senders[$id]);
+            ->willReturnCallback(static fn ($id) => $senders[$id]);
 
         return new SendersLocator($sendersMap, $container);
     }

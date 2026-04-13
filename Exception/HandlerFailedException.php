@@ -68,7 +68,7 @@ class HandlerFailedException extends RuntimeException implements WrappedExceptio
         return array_values(
             array_filter(
                 $this->exceptions,
-                fn ($exception) => is_a($exception, $exceptionClassName)
+                static fn ($exception) => is_a($exception, $exceptionClassName)
             )
         );
     }

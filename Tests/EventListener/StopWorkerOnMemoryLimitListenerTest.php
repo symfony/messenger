@@ -25,7 +25,7 @@ class StopWorkerOnMemoryLimitListenerTest extends TestCase
      */
     public function testWorkerStopsWhenMemoryLimitExceeded(int $memoryUsage, int $memoryLimit, bool $shouldStop)
     {
-        $memoryResolver = fn () => $memoryUsage;
+        $memoryResolver = static fn () => $memoryUsage;
 
         $worker = $this->createMock(Worker::class);
         $worker->expects($shouldStop ? $this->once() : $this->never())->method('stop');
@@ -48,7 +48,7 @@ class StopWorkerOnMemoryLimitListenerTest extends TestCase
         $logger->expects($this->once())->method('info')
             ->with('Worker stopped due to memory limit of {limit} bytes exceeded ({memory} bytes used)', ['limit' => 64, 'memory' => 70]);
 
-        $memoryResolver = fn () => 70;
+        $memoryResolver = static fn () => 70;
 
         $event = new WorkerRunningEvent(new Worker([], new MessageBus()), false);
 

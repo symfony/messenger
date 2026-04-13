@@ -64,7 +64,7 @@ class DispatchAfterCurrentBusMiddlewareTest extends TestCase
 
         $handlingMiddleware->expects($this->exactly(4))
             ->method('handle')
-            ->with($this->callback(function (Envelope $envelope) use (&$series) {
+            ->with($this->callback(static function (Envelope $envelope) use (&$series) {
                 return $envelope->getMessage() === array_shift($series);
             }))
             ->willReturnCallback($this->handleMessageCallback());
@@ -108,10 +108,10 @@ class DispatchAfterCurrentBusMiddlewareTest extends TestCase
         $matcher = $this->exactly(3);
         $handlingMiddleware->expects($matcher)
             ->method('handle')
-            ->with($this->callback(function (Envelope $envelope) use (&$series) {
+            ->with($this->callback(static function (Envelope $envelope) use (&$series) {
                 return $envelope->getMessage() === array_shift($series);
             }))
-            ->willReturnCallback(function ($envelope, StackInterface $stack) use ($matcher) {
+            ->willReturnCallback(static function ($envelope, StackInterface $stack) use ($matcher) {
                 if (2 === $matcher->getInvocationCount()) {
                     throw new \RuntimeException('Some exception while handling first event');
                 }
@@ -177,10 +177,10 @@ class DispatchAfterCurrentBusMiddlewareTest extends TestCase
         $matcher = $this->exactly(7);
         $handlingMiddleware->expects($matcher)
             ->method('handle')
-            ->with($this->callback(function (Envelope $envelope) use (&$series) {
+            ->with($this->callback(static function (Envelope $envelope) use (&$series) {
                 return $envelope->getMessage() === array_shift($series);
             }))
-            ->willReturnCallback(function ($envelope, StackInterface $stack) use ($eventBus, $eventL2a, $eventL2b, $eventL3a, $eventL3b, $matcher) {
+            ->willReturnCallback(static function ($envelope, StackInterface $stack) use ($eventBus, $eventL2a, $eventL2b, $eventL3a, $eventL3b, $matcher) {
                 switch ($matcher->getInvocationCount()) {
                     case 1:
                     case 2:
@@ -233,7 +233,7 @@ class DispatchAfterCurrentBusMiddlewareTest extends TestCase
         $fakePutMessageOnQueue = $this->createStub(MiddlewareInterface::class);
         $fakePutMessageOnQueue
             ->method('handle')
-            ->with($this->callback(function ($envelope) use ($messageBusAfterQueue) {
+            ->with($this->callback(static function ($envelope) use ($messageBusAfterQueue) {
                 // Fake putting the message on the queue
                 // Fake reading the queue
                 // Now, we add the message back to a new bus.
@@ -259,11 +259,11 @@ class DispatchAfterCurrentBusMiddlewareTest extends TestCase
         $commandHandlingMiddleware->expects($this->once())
             ->method('handle')
             ->with($this->expectHandledMessage($message))
-            ->willReturnCallback(fn ($envelope, StackInterface $stack) => $stack->next()->handle($envelope, $stack));
+            ->willReturnCallback(static fn ($envelope, StackInterface $stack) => $stack->next()->handle($envelope, $stack));
         $eventHandlingMiddleware->expects($this->once())
             ->method('handle')
             ->with($this->expectHandledMessage($event))
-            ->willReturnCallback(fn ($envelope, StackInterface $stack) => $stack->next()->handle($envelope, $stack));
+            ->willReturnCallback(static fn ($envelope, StackInterface $stack) => $stack->next()->handle($envelope, $stack));
         $messageBus->dispatch($message);
     }
 
@@ -291,12 +291,12 @@ class DispatchAfterCurrentBusMiddlewareTest extends TestCase
 
     private function expectHandledMessage($message): Callback
     {
-        return $this->callback(fn (Envelope $envelope) => $envelope->getMessage() === $message);
+        return $this->callback(static fn (Envelope $envelope) => $envelope->getMessage() === $message);
     }
 
     private function handleMessageCallback(): \Closure
     {
-        return fn ($envelope, StackInterface $stack) => $stack->next()->handle($envelope, $stack);
+        return static fn ($envelope, StackInterface $stack) => $stack->next()->handle($envelope, $stack);
     }
 }
 
