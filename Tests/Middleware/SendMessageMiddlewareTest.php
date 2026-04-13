@@ -59,7 +59,7 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
 
         $sender->expects($this->once())
             ->method('send')
-            ->with($this->callback(function (Envelope $envelope) {
+            ->with($this->callback(static function (Envelope $envelope) {
                 $lastSentStamp = $envelope->last(SentStamp::class);
 
                 // last SentStamp should be the "foo" alias
@@ -68,7 +68,7 @@ class SendMessageMiddlewareTest extends MiddlewareTestCase
             ->willReturnArgument(0);
         $sender2->expects($this->once())
             ->method('send')
-            ->with($this->callback(function (Envelope $envelope) {
+            ->with($this->callback(static function (Envelope $envelope) {
                 $lastSentStamp = $envelope->last(SentStamp::class);
 
                 // last SentStamp should be the "bar" alias

@@ -208,7 +208,7 @@ class TraceableMiddlewareTest extends MiddlewareTestCase
         ];
         $stopwatch->expects($this->exactly(2))
             ->method('stop')
-            ->willReturnCallback(function (string $name) use (&$stopSeries) {
+            ->willReturnCallback(static function (string $name) use (&$stopSeries) {
                 $constraint = array_shift($stopSeries);
                 $constraint->evaluate($name);
 
