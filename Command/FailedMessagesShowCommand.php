@@ -74,7 +74,8 @@ class FailedMessagesShowCommand extends AbstractFailedMessagesCommand
         }
 
         if ($input->getOption('stats')) {
-            $this->listMessagesPerClass($failureTransportName, $io, $input->getOption('max'));
+            $max = $input->hasParameterOption(['--max'], true) ? $input->getOption('max') : null;
+            $this->listMessagesPerClass($failureTransportName, $io, $max);
         } elseif (null === $id = $input->getArgument('id')) {
             $this->listMessages($failureTransportName, $io, $errorIo, $input->getOption('max'), $input->getOption('class-filter'));
         } else {
@@ -140,7 +141,7 @@ class FailedMessagesShowCommand extends AbstractFailedMessagesCommand
         $errorIo->comment(\sprintf('Run <comment>messenger:failed:show {id} --transport=%s -vv</comment> to see message details.', $failedTransportName));
     }
 
-    private function listMessagesPerClass(?string $failedTransportName, SymfonyStyle $io, int $max): void
+    private function listMessagesPerClass(?string $failedTransportName, SymfonyStyle $io, ?int $max): void
     {
         /** @var ListableReceiverInterface $receiver */
         $receiver = $this->getReceiver($failedTransportName);
