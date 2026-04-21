@@ -124,6 +124,27 @@ class SendFailedMessageToFailureTransportListenerTest extends TestCase
         $listener->onMessageFailed($event);
     }
 
+    public function testDoNotRedeliverToFailedWithStampWhenFailureTransportsAreConfigured()
+    {
+        $receiverName = 'my_receiver';
+
+        $sender = $this->createMock(SenderInterface::class);
+        $sender->expects($this->never())->method('send');
+
+        // Subscribers may add SentToFailureTransportStamp manually to opt out of the failure transport,
+        // even when $failureTransportsByName is populated (e.g. several transports share one listener).
+        $serviceLocator = new ServiceLocator([
+            $receiverName => static fn () => $sender,
+        ]);
+        $listener = new SendFailedMessageToFailureTransportListener($serviceLocator, null, [$receiverName => 'failed']);
+        $envelope = new Envelope(new \stdClass(), [
+            new SentToFailureTransportStamp($receiverName),
+        ]);
+        $event = new WorkerMessageFailedEvent($envelope, $receiverName, new \Exception());
+
+        $listener->onMessageFailed($event);
+    }
+
     public function testDoNothingIfFailureTransportIsNotDefined()
     {
         $sender = $this->createMock(SenderInterface::class);
