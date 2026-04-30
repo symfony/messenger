@@ -323,6 +323,24 @@ class WorkerTest extends TestCase
         $this->assertEquals(new \DateTimeImmutable('2023-03-19 14:00:03+00:00'), $clock->now());
     }
 
+    public function testWorkerDoesNotSleepWhenStoppedDuringIdleRunningEvent()
+    {
+        $clock = new MockClock('2023-03-19 14:00:00+00:00');
+        $receiver = new DummyReceiver([[]]);
+
+        $dispatcher = new EventDispatcher();
+        $dispatcher->addListener(WorkerRunningEvent::class, static function (WorkerRunningEvent $event) {
+            if ($event->isWorkerIdle()) {
+                $event->getWorker()->stop();
+            }
+        });
+
+        $worker = new Worker([$receiver], new MessageBus(), $dispatcher, clock: $clock);
+        $worker->run(['sleep' => 1000000]);
+
+        $this->assertEquals(new \DateTimeImmutable('2023-03-19 14:00:00+00:00'), $clock->now());
+    }
+
     public function testWorkerWithMultipleReceivers()
     {
         // envelopes, in their expected delivery order
