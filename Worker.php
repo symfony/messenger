@@ -127,6 +127,10 @@ class Worker
             if (!$this->flush(30.0) && !$envelopeHandled) {
                 $this->eventDispatcher?->dispatch(new WorkerRunningEvent($this, true));
 
+                if ($this->shouldStop) {
+                    continue;
+                }
+
                 if (0 < $sleep = (int) ($options['sleep'] - 1e6 * ($this->clock->now()->format('U.u') - $envelopeHandledStart->format('U.u')))) {
                     $this->clock->sleep($sleep / 1e6);
                 }
