@@ -32,7 +32,6 @@ use Symfony\Component\Messenger\EventListener\ResetServicesListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnFailureLimitListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMemoryLimitListener;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnMessageLimitListener;
-use Symfony\Component\Messenger\EventListener\StopWorkerOnTimeLimitListener;
 use Symfony\Component\Messenger\RoutableMessageBus;
 use Symfony\Component\Messenger\Worker;
 
@@ -210,7 +209,6 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
             }
 
             $stopsWhen[] = "been running for {$timeLimit}s";
-            $this->eventDispatcher->addSubscriber(new StopWorkerOnTimeLimitListener($timeLimit, $this->logger));
         }
 
         $stopsWhen[] = 'received a stop signal via the messenger:stop-workers command';
@@ -236,6 +234,7 @@ class ConsumeMessagesCommand extends Command implements SignalableCommandInterfa
         $this->worker = new Worker($receivers, $bus, $this->eventDispatcher, $this->logger, $rateLimiters);
         $options = [
             'sleep' => $input->getOption('sleep') * 1000000,
+            'time_limit' => null !== $timeLimit ? (int) $timeLimit : null,
         ];
         if ($queues = $input->getOption('queues')) {
             $options['queues'] = $queues;
