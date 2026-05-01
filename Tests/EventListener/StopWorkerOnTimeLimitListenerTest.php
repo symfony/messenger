@@ -14,15 +14,21 @@ namespace Symfony\Component\Messenger\Tests\EventListener;
 use PHPUnit\Framework\Attributes\Group;
 use PHPUnit\Framework\TestCase;
 use Psr\Log\LoggerInterface;
+use Symfony\Bridge\PhpUnit\ExpectDeprecationTrait;
 use Symfony\Component\Messenger\Event\WorkerRunningEvent;
 use Symfony\Component\Messenger\EventListener\StopWorkerOnTimeLimitListener;
 use Symfony\Component\Messenger\Worker;
 
 class StopWorkerOnTimeLimitListenerTest extends TestCase
 {
+    use ExpectDeprecationTrait;
+
     #[Group('time-sensitive')]
+    #[Group('legacy')]
     public function testWorkerStopsWhenTimeLimitIsReached()
     {
+        $this->expectDeprecation('Since symfony/messenger 8.1: "Symfony\Component\Messenger\EventListener\StopWorkerOnTimeLimitListener" is deprecated, use the "time_limit" worker option instead.');
+
         $logger = $this->createMock(LoggerInterface::class);
         $logger->expects($this->once())->method('info')
             ->with('Worker stopped due to time limit of {timeLimit}s exceeded', ['timeLimit' => 1]);
