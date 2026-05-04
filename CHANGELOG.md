@@ -14,6 +14,7 @@ CHANGELOG
  * Allow configuring the service reset interval in the `messenger:consume` command via the `--no-reset` option
  * Add `AmqpPriorityStamp` to set per-message priority on the AMQP transport
  * Add `ReleaseDeduplicationLockOnFailureListener` that releases the deduplication lock when a message fails and will not be retried
+ * Deprecate `StopWorkerOnTimeLimitListener` in favor of the `time_limit` worker option
 
 8.0
 ---
