@@ -11,8 +11,8 @@
 
 namespace Symfony\Component\Messenger\EventListener;
 
+use Symfony\Component\DependencyInjection\ServicesResetterInterface;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
-use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetterInterface;
 use Symfony\Component\Messenger\Event\WorkerRunningEvent;
 use Symfony\Component\Messenger\Event\WorkerStoppedEvent;
 
