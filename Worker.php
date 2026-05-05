@@ -82,14 +82,17 @@ class Worker
      *
      * Valid options are:
      *  * sleep (default: 1000000): Time in microseconds to sleep after no messages are found
+     *  * time_limit: The time limit in seconds the worker can handle new messages
      *  * queues: The queue names to consume from, instead of consuming from all queues. When this is used, all receivers must implement the QueueReceiverInterface
      */
     public function run(array $options = []): void
     {
         $options = array_merge([
             'sleep' => 1000000,
+            'time_limit' => null,
         ], $options);
         $queueNames = $options['queues'] ?? null;
+        $endTime = null !== $options['time_limit'] ? $this->clock->now()->format('U.u') + $options['time_limit'] : null;
 
         $this->metadata->set(['queueNames' => $queueNames]);
 
@@ -105,6 +108,11 @@ class Worker
         }
 
         while (!$this->shouldStop) {
+            if (null !== $endTime && $this->clock->now()->format('U.u') >= $endTime) {
+                $this->logger?->info('Worker stopped due to time limit of {timeLimit}s exceeded', ['timeLimit' => $options['time_limit']]);
+                break;
+            }
+
             $envelopeHandled = false;
             $envelopeHandledStart = $this->clock->now();
             $fetchSize = max(1, $options['fetch_size'] ?? 1);
@@ -153,7 +161,13 @@ class Worker
                 }
 
                 if (0 < $sleep = (int) ($options['sleep'] - 1e6 * ($this->clock->now()->format('U.u') - $envelopeHandledStart->format('U.u')))) {
-                    $this->clock->sleep($sleep / 1e6);
+                    if (null !== $endTime) {
+                        $sleep = min($sleep, (int) (1e6 * ($endTime - $this->clock->now()->format('U.u'))));
+                    }
+
+                    if (0 < $sleep) {
+                        $this->clock->sleep($sleep / 1e6);
+                    }
                 }
             }
         }
