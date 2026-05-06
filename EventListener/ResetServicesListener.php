@@ -11,10 +11,12 @@
 
 namespace Symfony\Component\Messenger\EventListener;
 
+use Symfony\Component\DependencyInjection\Attribute\Autowire;
 use Symfony\Component\EventDispatcher\EventSubscriberInterface;
 use Symfony\Component\HttpKernel\DependencyInjection\ServicesResetterInterface;
 use Symfony\Component\Messenger\Event\WorkerRunningEvent;
 use Symfony\Component\Messenger\Event\WorkerStoppedEvent;
+use Symfony\Contracts\Service\ResetInterface;
 
 /**
  * @author Grégoire Pineau <lyrixx@lyrixx.info>
@@ -22,7 +24,8 @@ use Symfony\Component\Messenger\Event\WorkerStoppedEvent;
 class ResetServicesListener implements EventSubscriberInterface
 {
     public function __construct(
-        private ServicesResetterInterface $servicesResetter,
+        #[Autowire(service: ServicesResetterInterface::class)]
+        private ResetInterface $servicesResetter,
     ) {
     }
 
