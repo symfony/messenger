@@ -46,17 +46,32 @@ final class SigningSerializer implements SerializerInterface
 
     public function decode(array $encodedEnvelope): Envelope
     {
-        $envelope = $this->inner->decode($encodedEnvelope);
-        $type = $envelope->getMessage()::class;
-
-        if (!$this->shouldSign($type)) {
-            return $envelope;
-        }
-
         $headers = $encodedEnvelope['headers'] ?? [];
+        $sign = $headers['Body-Sign'] ?? null;
 
         try {
-            if (!$sign = $headers['Body-Sign'] ?? null) {
+            if ($sign && hash_equals(hash_hmac($this->algorithm, $encodedEnvelope['body'] ?? '', $this->signingKey), $sign)) {
+                // A valid signature authenticates the message whatever its type: decode it without peeking.
+                // The algorithm is implied by the HMAC itself, so the "Sign-Algo" header isn't consulted here.
+                unset($encodedEnvelope['headers']['Body-Sign'], $encodedEnvelope['headers']['Sign-Algo']);
+
+                return $this->inner->decode($encodedEnvelope);
+            }
+
+            $envelope = null;
+
+            if (!$this->inner instanceof MessageTypeAwareSerializerInterface) {
+                $envelope = $this->inner->decode($encodedEnvelope);
+                $type = $envelope->getMessage()::class;
+            } elseif (null === $type = $this->inner->getMessageType($encodedEnvelope)) {
+                throw new InvalidMessageSignatureException('The message could not be verified and its type could not be determined; refusing to decode it.');
+            }
+
+            if (!$this->shouldSign($type)) {
+                return $envelope ?? $this->inner->decode($encodedEnvelope);
+            }
+
+            if (!$sign) {
                 throw new InvalidMessageSignatureException(\sprintf('Message "%s" requires a signature but none was found.', $type));
             }
 
@@ -64,18 +79,10 @@ final class SigningSerializer implements SerializerInterface
                 throw new InvalidMessageSignatureException(\sprintf('Expected "%s" signature algorithm for message "%s", "%s" given.', $this->algorithm, $type, $algo));
             }
 
-            $expected = hash_hmac($algo, $encodedEnvelope['body'] ?? '', $this->signingKey);
-            if (!hash_equals($sign, $expected)) {
-                throw new InvalidMessageSignatureException(\sprintf('Invalid signature for message "%s".', $type));
-            }
+            throw new InvalidMessageSignatureException(\sprintf('Invalid signature for message "%s".', $type));
         } catch (\Throwable $e) {
             return MessageDecodingFailedException::wrap($encodedEnvelope, $e->getMessage(), (int) $e->getCode(), $e);
         }
-
-        unset($headers['Body-Sign'], $headers['Sign-Algo']);
-        $encodedEnvelope['headers'] = $headers;
-
-        return $envelope;
     }
 
     private function shouldSign(string $type): bool

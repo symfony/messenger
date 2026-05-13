@@ -20,7 +20,7 @@ use Symfony\Component\Messenger\Stamp\NonSendableStampInterface;
 /**
  * @author Ryan Weaver<ryan@symfonycasts.com>
  */
-class PhpSerializer implements SerializerInterface
+class PhpSerializer implements SerializerInterface, MessageTypeAwareSerializerInterface
 {
     private bool $acceptPhpIncompleteClass = false;
 
@@ -69,6 +69,33 @@ class PhpSerializer implements SerializerInterface
         }
 
         return $envelope;
+    }
+
+    public function getMessageType(array $encodedEnvelope): ?string
+    {
+        if (!\is_string($body = $encodedEnvelope['body'] ?? null) || '' === $body) {
+            return null;
+        }
+
+        if (!str_ends_with($body, '}') && false === $body = base64_decode($body, true)) {
+            return null;
+        }
+
+        try {
+            // Allowing only Envelope means the carried message (and any stamp) becomes a
+            // \__PHP_Incomplete_Class, so no constructor/__wakeup/__unserialize runs.
+            $envelope = @unserialize(stripslashes($body), ['allowed_classes' => [Envelope::class]]);
+
+            if (!$envelope instanceof Envelope) {
+                return null;
+            }
+
+            $message = $envelope->getMessage();
+        } catch (\Throwable) {
+            return null;
+        }
+
+        return $message instanceof \__PHP_Incomplete_Class ? ((array) $message)['__PHP_Incomplete_Class_Name'] : $message::class;
     }
 
     public function encode(Envelope $envelope): array

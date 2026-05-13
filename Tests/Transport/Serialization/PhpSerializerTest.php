@@ -108,6 +108,26 @@ class PhpSerializerTest extends TestCase
         $this->assertEquals($envelope, $serializer->decode($encoded));
     }
 
+    public function testGetMessageType()
+    {
+        $serializer = $this->createPhpSerializer();
+
+        $this->assertSame(DummyMessage::class, $serializer->getMessageType($serializer->encode(new Envelope(new DummyMessage('Hello')))));
+        // base64-encoded body (non-UTF8 payload)
+        $this->assertSame(DummyMessage::class, $serializer->getMessageType($serializer->encode(new Envelope(new DummyMessage("\xE9")))));
+    }
+
+    public function testGetMessageTypeReturnsNullForUndeterminableBody()
+    {
+        $serializer = $this->createPhpSerializer();
+
+        $this->assertNull($serializer->getMessageType([]));
+        $this->assertNull($serializer->getMessageType(['body' => '']));
+        $this->assertNull($serializer->getMessageType(['body' => 'definitely not serialized data']));
+        $this->assertNull($serializer->getMessageType(['body' => addslashes(serialize(123))]));
+        $this->assertNull($serializer->getMessageType(['body' => addslashes(serialize(new DummyMessage('Hello')))]));
+    }
+
     protected function createPhpSerializer(): PhpSerializer
     {
         return new PhpSerializer();
