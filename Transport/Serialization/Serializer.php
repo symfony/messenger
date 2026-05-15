@@ -45,7 +45,7 @@ class Serializer implements SerializerInterface, MessageTypeAwareSerializerInter
     private array $classToTypeMap = [];
 
     /**
-     * @pram array<string, class-string> $typeToClassMap
+     * @param array<string, class-string> $typeToClassMap
      */
     public function __construct(
         ?SymfonySerializerInterface $serializer = null,
@@ -117,7 +117,9 @@ class Serializer implements SerializerInterface, MessageTypeAwareSerializerInter
 
     public function getMessageType(array $encodedEnvelope): ?string
     {
-        return $encodedEnvelope['headers']['type'] ?? null;
+        $type = $encodedEnvelope['headers']['type'] ?? null;
+
+        return null === $type ? null : ($this->typeToClassMap[$type] ?? $type);
     }
 
     public function encode(Envelope $envelope): array

@@ -18,6 +18,11 @@ namespace Symfony\Component\Messenger\Exception;
  */
 class RecoverableMessageHandlingException extends RuntimeException implements RecoverableExceptionInterface
 {
+    /**
+     * @param bool $forceRetry When true (the default, preserving 8.0 semantics), the message will be retried regardless
+     *                         of the configured max_retries on the transport, which can cause unbounded retries. Pass
+     *                         false to let the configured retry strategy bound the number of attempts.
+     */
     public function __construct(
         string $message = '',
         int $code = 0,

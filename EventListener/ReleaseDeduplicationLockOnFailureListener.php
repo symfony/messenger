@@ -28,6 +28,13 @@ use Symfony\Component\Messenger\Stamp\DeduplicateStamp;
  * Caveat: a message moved to a failure transport and later replayed via
  * messenger:failed:retry will not be deduplicated against a parallel dispatch
  * of the same key, since the lock is released here on definitive failure.
+ *
+ * Security note: the key released here is read from the DeduplicateStamp that
+ * travels with the envelope and is not authenticated. An actor with queue
+ * write access can target the deduplication key of another in-flight message
+ * by enqueueing a crafted, terminally-failing envelope. See DeduplicateStamp:
+ * deduplication keys are a best-effort idempotency primitive, not a
+ * correctness primitive against a hostile queue producer.
  */
 final class ReleaseDeduplicationLockOnFailureListener implements EventSubscriberInterface
 {

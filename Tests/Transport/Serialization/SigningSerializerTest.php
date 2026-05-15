@@ -18,8 +18,10 @@ use Symfony\Component\Messenger\Exception\MessageDecodingFailedException;
 use Symfony\Component\Messenger\Tests\Fixtures\ChildDummyMessage;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyMessage;
 use Symfony\Component\Messenger\Tests\Fixtures\DummyMessageInterface;
+use Symfony\Component\Messenger\Tests\Fixtures\DummyMessageWithSerializedTypeName;
 use Symfony\Component\Messenger\Transport\Serialization\MessageTypeAwareSerializerInterface;
 use Symfony\Component\Messenger\Transport\Serialization\PhpSerializer;
+use Symfony\Component\Messenger\Transport\Serialization\Serializer;
 use Symfony\Component\Messenger\Transport\Serialization\SerializerInterface;
 use Symfony\Component\Messenger\Transport\Serialization\SigningSerializer;
 
@@ -255,6 +257,40 @@ class SigningSerializerTest extends TestCase
 
         // Tamper by removing signature to ensure verification occurs for child type
         unset($encoded['headers']['Body-Sign']);
+
+        $envelope = $serializer->decode($encoded);
+        $this->assertInstanceOf(MessageDecodingFailedException::class, $envelope->getMessage());
+        $this->assertInstanceOf(InvalidMessageSignatureException::class, $envelope->getMessage()->getPrevious());
+    }
+
+    public function testDecodeRejectsMissingSignatureForMessageWithSerializedTypeName()
+    {
+        $inner = new Serializer(typeToClassMap: ['dummy.message' => DummyMessageWithSerializedTypeName::class]);
+        $serializer = new SigningSerializer($inner, 'secret-key', [DummyMessageWithSerializedTypeName::class]);
+
+        $encoded = $serializer->encode(new Envelope(new DummyMessageWithSerializedTypeName('hello')));
+
+        $this->assertSame('dummy.message', $encoded['headers']['type']);
+        $this->assertArrayHasKey('Body-Sign', $encoded['headers']);
+
+        unset($encoded['headers']['Body-Sign'], $encoded['headers']['Sign-Algo']);
+
+        $envelope = $serializer->decode($encoded);
+        $this->assertInstanceOf(MessageDecodingFailedException::class, $envelope->getMessage());
+        $this->assertInstanceOf(InvalidMessageSignatureException::class, $envelope->getMessage()->getPrevious());
+    }
+
+    public function testDecodeRejectsMissingSignatureWhenInnerSerializerUsesTypeToClassMap()
+    {
+        $inner = new Serializer(typeToClassMap: ['dummy.mapped' => DummyMessage::class]);
+        $serializer = new SigningSerializer($inner, 'secret-key', [DummyMessage::class]);
+
+        $encoded = $serializer->encode(new Envelope(new DummyMessage('hello')));
+
+        $this->assertSame('dummy.mapped', $encoded['headers']['type']);
+        $this->assertArrayHasKey('Body-Sign', $encoded['headers']);
+
+        unset($encoded['headers']['Body-Sign'], $encoded['headers']['Sign-Algo']);
 
         $envelope = $serializer->decode($encoded);
         $this->assertInstanceOf(MessageDecodingFailedException::class, $envelope->getMessage());

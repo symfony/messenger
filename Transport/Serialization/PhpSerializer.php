@@ -82,8 +82,12 @@ class PhpSerializer implements SerializerInterface, MessageTypeAwareSerializerIn
         }
 
         try {
-            // Allowing only Envelope means the carried message (and any stamp) becomes a
-            // \__PHP_Incomplete_Class, so no constructor/__wakeup/__unserialize runs.
+            // The "allowed_classes" allowlist is the SOLE line of defense here: this call
+            // intentionally runs without installing the unserialize_callback_func / error
+            // handler guards used by safelyUnserialize(). Forcing every class except
+            // Envelope to \__PHP_Incomplete_Class ensures no constructor/__wakeup/
+            // __unserialize runs on attacker-controlled bytes. Any future change that
+            // widens "allowed_classes" beyond Envelope MUST re-introduce those guards.
             $envelope = @unserialize(stripslashes($body), ['allowed_classes' => [Envelope::class]]);
 
             if (!$envelope instanceof Envelope) {
