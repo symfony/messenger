@@ -7,12 +7,7 @@ other applications or via message queues.
 Sponsor
 -------
 
-The Messenger component for Symfony 8.0 is [backed][1] by [Cadoles][2].
-
-Cadoles is a French Cooperative and Participative Company (SCOP) providing IT
-services based in Dijon. This company is a key player in free software and open
-formats, and uses Symfony in its development services for businesses and
-institutions.
+This package is looking for a [backer][1].
 
 Help Symfony by [sponsoring][3] its development!
 
@@ -26,5 +21,4 @@ Resources
    in the [main Symfony repository](https://github.com/symfony/symfony)
 
 [1]: https://symfony.com/backers
-[2]: https://www.cadoles.com
 [3]: https://symfony.com/sponsor
