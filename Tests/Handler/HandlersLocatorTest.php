@@ -28,9 +28,12 @@ class HandlersLocatorTest extends TestCase
         ]);
 
         $descriptor = new HandlerDescriptor($handler);
-        $descriptor->getName();
 
-        $this->assertEquals([$descriptor], iterator_to_array($locator->getHandlers(new Envelope(new DummyMessage('a')))));
+        $handlers = iterator_to_array($locator->getHandlers(new Envelope(new DummyMessage('a'))));
+
+        $this->assertCount(1, $handlers);
+        $this->assertSame($descriptor->getName(), $handlers[0]->getName());
+        $this->assertSame($handler, (new \ReflectionFunction($handlers[0]->getHandler()))->getClosureThis());
     }
 
     public function testItReturnsOnlyHandlersMatchingTransport()
