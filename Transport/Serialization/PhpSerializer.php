@@ -192,7 +192,7 @@ class PhpSerializer implements SerializerInterface, MessageTypeAwareSerializerIn
 
         try {
             /** @var Envelope */
-            $envelope = unserialize($contents);
+            $envelope = unserialize($contents, ['allowed_classes' => true]);
         } catch (\Throwable $e) {
             if ($e instanceof MessageDecodingFailedException) {
                 throw $e;
