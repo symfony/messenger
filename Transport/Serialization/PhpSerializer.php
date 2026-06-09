@@ -208,7 +208,7 @@ class PhpSerializer implements SerializerInterface, MessageTypeAwareSerializerIn
         });
 
         try {
-            return unserialize($contents);
+            return unserialize($contents, ['allowed_classes' => true]);
         } finally {
             restore_error_handler();
             ini_set('unserialize_callback_func', $prevUnserializeHandler);
