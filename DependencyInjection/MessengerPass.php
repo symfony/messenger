@@ -414,7 +414,7 @@ class MessengerPass implements CompilerPassInterface
         }
 
         $typeToClassMap = [];
-        foreach ($container->findTaggedResourceIds('messenger.message') as $id => $tags) {
+        foreach ($container->findTaggedResourceIds('messenger.message', false) as $id => $tags) {
             $class = $container->getDefinition($id)->getClass();
             foreach ($tags as $tag) {
                 if (!isset($tag['serializedTypeName'])) {

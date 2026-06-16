@@ -1054,6 +1054,12 @@ class MessengerPassTest extends TestCase
             ->setArguments([null, 'json', [], []]);
 
         $container
+            ->register('App\Message\AbstractMessage', 'App\Message\AbstractMessage')
+            ->setAbstract(true)
+            ->addTag('container.excluded')
+            ->addTag('messenger.message')
+        ;
+        $container
             ->register('App\Message\MessageA', 'App\Message\MessageA')
             ->addTag('container.excluded')
             ->addTag('messenger.message', ['serializedTypeName' => 'type.a'])
